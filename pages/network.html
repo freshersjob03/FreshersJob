@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FreshersJob – My Network</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal: #3aafc4;
+      --teal-dark: #1a7a94;
+      --teal-light: #e8f7fa;
+      --slate: #4a6070;
+      --dark: #1c2b35;
+      --gray: #6b7f8c;
+      --light: #f5f8fa;
+      --white: #ffffff;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--light);
+      color: var(--dark);
+      overflow-x: hidden;
+    }
+
+    /* NAVBAR */
+    nav {
+      background: var(--white);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      position: sticky; top: 0; z-index: 100;
+      padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; gap: 16px;
+    }
+    .logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; }
+    .nav-search {
+      flex: 1; max-width: 400px; position: relative;
+      display: flex; align-items: center;
+    }
+    .nav-search svg { position: absolute; left: 12px; color: var(--gray); width: 16px; height: 16px; }
+    .nav-search input {
+      width: 100%; padding: 9px 16px 9px 36px;
+      border: 2px solid #dde4e8; border-radius: 25px;
+      font-family: 'Nunito', sans-serif; font-size: 0.88rem;
+      color: var(--dark); outline: none; background: var(--light);
+      transition: border-color 0.2s;
+    }
+    .nav-search input:focus { border-color: var(--teal); background: white; }
+    .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; }
+    .nav-links a {
+      text-decoration: none; color: var(--slate); font-weight: 700; font-size: 0.78rem;
+      padding: 6px 10px; border-radius: 8px;
+      transition: background 0.2s, color 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .nav-links a:hover, .nav-links a.active { background: var(--teal-light); color: var(--teal-dark); }
+    .nav-links svg { width: 20px; height: 20px; }
+    .nav-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 800; font-size: 0.85rem; cursor: pointer;
+    }
+
+    /* LAYOUT */
+    .network-layout {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 20px;
+    }
+
+    /* SIDEBAR */
+    .sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+    .sidebar-card {
+      background: white; border-radius: 16px; padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .sidebar-card h4 {
+      font-size: 0.88rem; font-weight: 900; color: var(--dark);
+      margin-bottom: 14px; padding-bottom: 8px;
+      border-bottom: 2px solid var(--light);
+    }
+
+    .network-stat {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid #f0f2f4;
+      font-size: 0.82rem;
+    }
+    .network-stat:last-child { border-bottom: none; }
+    .network-stat span:first-child { color: var(--slate); font-weight: 600; }
+    .network-stat span:last-child { color: var(--teal-dark); font-weight: 900; }
+
+    .filter-btn {
+      width: 100%; padding: 9px; margin-bottom: 8px;
+      border: 2px solid #dde4e8; border-radius: 10px;
+      background: white; font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 0.82rem; color: var(--slate);
+      cursor: pointer; transition: all 0.2s; text-align: left;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      border-color: var(--teal); color: var(--teal-dark); background: var(--teal-light);
+    }
+    .filter-btn:last-child { margin-bottom: 0; }
+
+    /* MAIN */
+    .main-content { display: flex; flex-direction: column; gap: 16px; }
+
+    /* Section Header */
+    .section-title {
+      background: white; border-radius: 16px; padding: 16px 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .section-title h2 { font-size: 1rem; font-weight: 900; color: var(--dark); }
+    .section-title span { font-size: 0.82rem; color: var(--gray); }
+
+    /* People Grid */
+    .people-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .person-card {
+      background: white; border-radius: 16px;
+      overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      transition: all 0.25s; text-align: center;
+      border: 2px solid transparent;
+    }
+    .person-card:hover { border-color: var(--teal); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+
+    .person-banner {
+      height: 50px;
+      background: linear-gradient(135deg, var(--teal-dark), var(--teal));
+    }
+    .person-body { padding: 0 16px 16px; }
+    .person-avatar {
+      width: 54px; height: 54px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 900; font-size: 1.1rem;
+      margin: -27px auto 10px; border: 3px solid white;
+    }
+    .person-name { font-weight: 900; font-size: 0.88rem; color: var(--dark); margin-bottom: 3px; }
+    .person-title { font-size: 0.75rem; color: var(--gray); margin-bottom: 12px; line-height: 1.4; }
+    .mutual { font-size: 0.72rem; color: var(--teal-dark); font-weight: 700; margin-bottom: 12px; }
+
+    .btn-connect {
+      width: 100%; padding: 8px;
+      border: 2px solid var(--teal); border-radius: 20px;
+      background: transparent; color: var(--teal-dark);
+      font-family: 'Nunito', sans-serif; font-weight: 700;
+      font-size: 0.78rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-connect:hover { background: var(--teal); color: white; }
+    .btn-connect.connected {
+      background: var(--teal-light); color: var(--teal-dark);
+      border-color: var(--teal-light);
+    }
+
+    /* Pending Requests */
+    .requests-section { display: flex; flex-direction: column; gap: 12px; }
+
+    .request-card {
+      background: white; border-radius: 14px; padding: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .request-avatar {
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 900; font-size: 1rem; flex-shrink: 0;
+    }
+    .request-info { flex: 1; }
+    .request-name { font-weight: 900; font-size: 0.88rem; color: var(--dark); margin-bottom: 2px; }
+    .request-title { font-size: 0.75rem; color: var(--gray); }
+    .request-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .btn-accept {
+      padding: 7px 16px; background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      color: white; border: none; border-radius: 20px;
+      font-family: 'Nunito', sans-serif; font-weight: 700;
+      font-size: 0.78rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-accept:hover { transform: translateY(-1px); }
+    .btn-decline {
+      padding: 7px 16px; background: transparent;
+      border: 2px solid #dde4e8; border-radius: 20px;
+      font-family: 'Nunito', sans-serif; font-weight: 700;
+      font-size: 0.78rem; color: var(--slate); cursor: pointer; transition: all 0.2s;
+    }
+    .btn-decline:hover { border-color: #e53935; color: #e53935; }
+
+    .section-label {
+      font-size: 0.92rem; font-weight: 900; color: var(--dark);
+      margin-bottom: 4px;
+    }
+    .section-sub {
+      font-size: 0.8rem; color: var(--gray); margin-bottom: 14px;
+    }
+
+    @media (max-width: 768px) {
+      .network-layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="../index.html" class="logo">
+    <img src="../images/logo.png" height="50" alt="FreshersJob Logo" style="margin-left: 50px;">
+  </a>
+  <div class="nav-search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Search people, companies..." />
+  </div>
+  <ul class="nav-links">
+    <li><a href="../index.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</a></li>
+    <li><a href="feed.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.07-.44.18-.9.18-1.37C18 3.15 16.85 2 15 2H9C7.15 2 6 3.15 6 4.63c0 .47.11.93.18 1.37H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg>Jobs</a></li>
+    <li><a href="network.html" class="active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Network</a></li>
+    <li><a href="messages.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>Messages</a></li>
+    <li><a href="notifications.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>Alerts</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="avatar" onclick="window.location.href='profile.html'">YO</div>
+  </div>
+</nav>
+
+<!-- NETWORK LAYOUT -->
+<div class="network-layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <h4>📊 My Network</h4>
+      <div class="network-stat"><span>Connections</span><span>48</span></div>
+      <div class="network-stat"><span>Pending Requests</span><span>3</span></div>
+      <div class="network-stat"><span>Profile Views</span><span>124</span></div>
+      <div class="network-stat"><span>Search Appearances</span><span>56</span></div>
+    </div>
+
+    <div class="sidebar-card">
+      <h4>🔍 Filter People</h4>
+      <button class="filter-btn active">👥 All Suggestions</button>
+      <button class="filter-btn">🎓 Same College</button>
+      <button class="filter-btn">💼 Same Field</button>
+      <button class="filter-btn">📍 Same City</button>
+      <button class="filter-btn">🏢 Company Alumni</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- Pending Requests -->
+    <div class="section-title">
+      <div>
+        <div class="section-label">📬 Pending Requests</div>
+        <div class="section-sub">3 people want to connect with you</div>
+      </div>
+    </div>
+
+    <div class="requests-section">
+      <div class="request-card">
+        <div class="request-avatar" style="background:linear-gradient(135deg,#3aafc4,#1a7a94)">RK</div>
+        <div class="request-info">
+          <div class="request-name">Rahul Kumar</div>
+          <div class="request-title">B.Tech CSE · VIT Vellore · 2025 Batch</div>
+        </div>
+        <div class="request-actions">
+          <button class="btn-accept">Accept</button>
+          <button class="btn-decline">Decline</button>
+        </div>
+      </div>
+
+      <div class="request-card">
+        <div class="request-avatar" style="background:linear-gradient(135deg,#f5a623,#e08a00)">PS</div>
+        <div class="request-info">
+          <div class="request-name">Priya Sharma</div>
+          <div class="request-title">UI/UX Designer · Infosys Intern · Delhi</div>
+        </div>
+        <div class="request-actions">
+          <button class="btn-accept">Accept</button>
+          <button class="btn-decline">Decline</button>
+        </div>
+      </div>
+
+      <div class="request-card">
+        <div class="request-avatar" style="background:linear-gradient(135deg,#7c3aed,#5b21b6)">AM</div>
+        <div class="request-info">
+          <div class="request-name">Arjun Mehta</div>
+          <div class="request-title">Data Analyst · Wipro · Mumbai</div>
+        </div>
+        <div class="request-actions">
+          <button class="btn-accept">Accept</button>
+          <button class="btn-decline">Decline</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- People You May Know -->
+    <div class="section-title">
+      <div>
+        <div class="section-label">🤝 People You May Know</div>
+        <div class="section-sub">Based on your profile and interests</div>
+      </div>
+      <span>See all</span>
+    </div>
+
+    <div class="people-grid">
+
+      <div class="person-card">
+        <div class="person-banner"></div>
+        <div class="person-body">
+          <div class="person-avatar" style="background:linear-gradient(135deg,#3aafc4,#1a7a94)">SK</div>
+          <div class="person-name">Sneha Kapoor</div>
+          <div class="person-title">Frontend Developer · React.js · Bangalore</div>
+          <div class="mutual">3 mutual connections</div>
+          <button class="btn-connect" onclick="toggleConnect(this)">+ Connect</button>
+        </div>
+      </div>
+
+      <div class="person-card">
+        <div class="person-banner" style="background:linear-gradient(135deg,#7c3aed,#5b21b6)"></div>
+        <div class="person-body">
+          <div class="person-avatar" style="background:linear-gradient(135deg,#7c3aed,#5b21b6)">VR</div>
+          <div class="person-name">Vikram Reddy</div>
+          <div class="person-title">Data Science Fresher · Python · Hyderabad</div>
+          <div class="mutual">5 mutual connections</div>
+          <button class="btn-connect" onclick="toggleConnect(this)">+ Connect</button>
+        </div>
+      </div>
+
+      <div class="person-card">
+        <div class="person-banner" style="background:linear-gradient(135deg,#f5a623,#e08a00)"></div>
+        <div class="person-body">
+          <div class="person-avatar" style="background:linear-gradient(135deg,#f5a623,#e08a00)">AN</div>
+          <div class="person-name">Anjali Nair</div>
+          <div class="person-title">UI/UX Designer · Figma · Pune</div>
+          <div class="mutual">2 mutual connections</div>
+          <button class="btn-connect" onclick="toggleConnect(this)">+ Connect</button>
+        </div>
+      </div>
+
+      <div class="person-card">
+        <div class="person-banner" style="background:linear-gradient(135deg,#2d8a4e,#1a5c32)"></div>
+        <div class="person-body">
+          <div class="person-avatar" style="background:linear-gradient(135deg,#2d8a4e,#1a5c32)">KP</div>
+          <div class="person-name">Karan Patel</div>
+          <div class="person-title">Backend Developer · Node.js · Mumbai</div>
+          <div class="mutual">7 mutual connections</div>
+          <button class="btn-connect" onclick="toggleConnect(this)">+ Connect</button>
+        </div>
+      </div>
+
+      <div class="person-card">
+        <div class="person-banner" style="background:linear-gradient(135deg,#e53935,#c62828)"></div>
+        <div class="person-body">
+          <div class="person-avatar" style="background:linear-gradient(135deg,#e53935,#c62828)">MS</div>
+          <div class="person-name">Meera Singh</div>
+          <div class="person-title">HR Executive · TCS · Chennai</div>
+          <div class="mutual">4 mutual connections</div>
+          <button class="btn-connect" onclick="toggleConnect(this)">+ Connect</button>
+        </div>
+      </div>
+
+      <div class="person-card">
+        <div class="person-banner" style="background:linear-gradient(135deg,#1a73e8,#0d47a1)"></div>
+        <div class="person-body">
+          <div class="person-avatar" style="background:linear-gradient(135deg,#1a73e8,#0d47a1)">RT</div>
+          <div class="person-name">Rohan Tiwari</div>
+          <div class="person-title">Cloud Engineer · AWS · Delhi</div>
+          <div class="mutual">6 mutual connections</div>
+          <button class="btn-connect" onclick="toggleConnect(this)">+ Connect</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+function toggleConnect(btn) {
+  if (btn.classList.contains("connected")) {
+    btn.classList.remove("connected");
+    btn.textContent = "+ Connect";
+  } else {
+    btn.classList.add("connected");
+    btn.textContent = "✓ Connected";
+  }
+}
+</script>
+
+</body>
+</html>

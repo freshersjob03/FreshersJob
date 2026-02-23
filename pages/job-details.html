@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FreshersJob – Job Detail</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal: #3aafc4;
+      --teal-dark: #1a7a94;
+      --teal-light: #e8f7fa;
+      --slate: #4a6070;
+      --dark: #1c2b35;
+      --gray: #6b7f8c;
+      --light: #f5f8fa;
+      --white: #ffffff;
+      --star: #f5a623;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--light);
+      color: var(--dark);
+      overflow-x: hidden;
+    }
+
+    /* NAVBAR */
+    nav {
+      background: var(--white);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      position: sticky; top: 0; z-index: 100;
+      padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; gap: 16px;
+    }
+    .logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; }
+    .nav-search {
+      flex: 1; max-width: 400px; position: relative;
+      display: flex; align-items: center;
+    }
+    .nav-search svg { position: absolute; left: 12px; color: var(--gray); width: 16px; height: 16px; }
+    .nav-search input {
+      width: 100%; padding: 9px 16px 9px 36px;
+      border: 2px solid #dde4e8; border-radius: 25px;
+      font-family: 'Nunito', sans-serif; font-size: 0.88rem;
+      color: var(--dark); outline: none; background: var(--light);
+      transition: border-color 0.2s;
+    }
+    .nav-search input:focus { border-color: var(--teal); background: white; }
+    .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; }
+    .nav-links a {
+      text-decoration: none; color: var(--slate); font-weight: 700; font-size: 0.78rem;
+      padding: 6px 10px; border-radius: 8px;
+      transition: background 0.2s, color 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .nav-links a:hover, .nav-links a.active { background: var(--teal-light); color: var(--teal-dark); }
+    .nav-links svg { width: 20px; height: 20px; }
+    .nav-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 800; font-size: 0.85rem; cursor: pointer;
+    }
+
+    /* LAYOUT */
+    .detail-layout {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 20px;
+    }
+
+    /* MAIN CONTENT */
+    .main-content { display: flex; flex-direction: column; gap: 16px; }
+
+    /* Back button */
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--teal-dark); font-weight: 700; font-size: 0.88rem;
+      text-decoration: none; transition: gap 0.2s;
+    }
+    .back-btn:hover { gap: 10px; }
+
+    /* Job Header Card */
+    .job-header-card {
+      background: white; border-radius: 16px; padding: 28px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .job-header-top {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; margin-bottom: 20px;
+    }
+    .job-header-left { display: flex; align-items: flex-start; gap: 16px; }
+    .company-logo {
+      width: 64px; height: 64px; border-radius: 16px;
+      background: var(--teal-light);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 1.1rem; color: var(--teal-dark); flex-shrink: 0;
+    }
+    .job-title { font-size: 1.4rem; font-weight: 900; color: var(--dark); margin-bottom: 4px; }
+    .company-name { font-size: 0.95rem; color: var(--gray); font-weight: 700; margin-bottom: 4px; }
+    .company-link { font-size: 0.82rem; color: var(--teal-dark); font-weight: 700; text-decoration: none; }
+    .company-link:hover { text-decoration: underline; }
+
+    .job-header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .bookmark-btn {
+      background: none; border: 2px solid #dde4e8; cursor: pointer;
+      color: var(--gray); transition: all 0.2s; padding: 8px;
+      border-radius: 10px; display: flex; align-items: center;
+    }
+    .bookmark-btn:hover { border-color: var(--teal); color: var(--teal); }
+    .feat-badge {
+      background: var(--star); color: white;
+      font-size: 0.72rem; font-weight: 800; padding: 4px 12px; border-radius: 12px;
+    }
+
+    .job-meta-row {
+      display: flex; flex-wrap: wrap; gap: 16px;
+      padding: 16px 0; border-top: 1px solid #f0f2f4; border-bottom: 1px solid #f0f2f4;
+      margin-bottom: 16px;
+    }
+    .meta-item {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.85rem; color: var(--slate); font-weight: 700;
+    }
+    .meta-item svg { width: 16px; height: 16px; color: var(--teal); }
+
+    .job-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .job-tag {
+      background: var(--teal-light); color: var(--teal-dark);
+      font-size: 0.78rem; font-weight: 700; padding: 5px 14px; border-radius: 20px;
+    }
+    .job-tag.gray { background: #f0f2f4; color: var(--slate); }
+
+    /* Detail Sections */
+    .detail-card {
+      background: white; border-radius: 16px; padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .detail-card h3 {
+      font-size: 1rem; font-weight: 900; color: var(--dark);
+      margin-bottom: 16px; padding-bottom: 10px;
+      border-bottom: 2px solid var(--light);
+    }
+    .detail-card p {
+      font-size: 0.9rem; color: var(--slate); line-height: 1.8; margin-bottom: 12px;
+    }
+    .detail-card ul {
+      list-style: none; display: flex; flex-direction: column; gap: 10px;
+    }
+    .detail-card ul li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 0.88rem; color: var(--slate); line-height: 1.6;
+    }
+    .detail-card ul li::before {
+      content: '✓';
+      color: var(--teal);
+      font-weight: 900;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* RIGHT SIDEBAR */
+    .sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+    /* Apply Card */
+    .apply-card {
+      background: white; border-radius: 16px; padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .salary-big {
+      font-size: 1.6rem; font-weight: 900; color: var(--teal-dark);
+      margin-bottom: 4px;
+    }
+    .salary-label { font-size: 0.78rem; color: var(--gray); margin-bottom: 20px; }
+
+    .apply-info { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .apply-info-item {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.82rem; padding: 8px 0;
+      border-bottom: 1px solid #f0f2f4;
+    }
+    .apply-info-item:last-child { border-bottom: none; }
+    .apply-info-item span:first-child { color: var(--gray); font-weight: 600; }
+    .apply-info-item span:last-child { color: var(--dark); font-weight: 800; }
+
+    .btn-apply-now {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      color: white; border: none; border-radius: 12px;
+      font-family: 'Nunito', sans-serif; font-weight: 800;
+      font-size: 1rem; cursor: pointer; transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(58,175,196,0.35);
+      margin-bottom: 10px;
+    }
+    .btn-apply-now:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(58,175,196,0.45); }
+
+    .btn-save-job {
+      width: 100%; padding: 12px;
+      background: transparent; border: 2px solid #dde4e8;
+      border-radius: 12px; font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 0.92rem; color: var(--slate);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-save-job:hover { border-color: var(--teal); color: var(--teal-dark); }
+
+    /* Company Card */
+    .company-card {
+      background: white; border-radius: 16px; padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .company-card h4 { font-size: 0.9rem; font-weight: 900; color: var(--dark); margin-bottom: 14px; }
+    .company-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .company-card-logo {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--teal-light);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; color: var(--teal-dark);
+    }
+    .company-card-name { font-weight: 900; font-size: 0.95rem; color: var(--dark); }
+    .company-card-type { font-size: 0.78rem; color: var(--gray); }
+    .company-card p { font-size: 0.82rem; color: var(--slate); line-height: 1.6; margin-bottom: 12px; }
+    .company-stats { display: flex; gap: 16px; }
+    .cstat { text-align: center; }
+    .cstat-num { font-weight: 900; font-size: 0.95rem; color: var(--teal-dark); }
+    .cstat-label { font-size: 0.7rem; color: var(--gray); }
+
+    @media (max-width: 768px) {
+      .detail-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="../index.html" class="logo">
+    <img src="../images/logo.png" height="50" alt="FreshersJob Logo" style="margin-left: 50px;">
+  </a>
+  <div class="nav-search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Search jobs, companies, skills..." />
+  </div>
+  <ul class="nav-links">
+    <li><a href="../index.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</a></li>
+    <li><a href="feed.html" class="active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.07-.44.18-.9.18-1.37C18 3.15 16.85 2 15 2H9C7.15 2 6 3.15 6 4.63c0 .47.11.93.18 1.37H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg>Jobs</a></li>
+    <li><a href="network.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Network</a></li>
+    <li><a href="messages.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>Messages</a></li>
+    <li><a href="notifications.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>Alerts</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="avatar" onclick="window.location.href='profile.html'">YO</div>
+  </div>
+</nav>
+
+<!-- DETAIL LAYOUT -->
+<div class="detail-layout">
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <a href="feed.html" class="back-btn">
+      ← Back to Jobs
+    </a>
+
+    <!-- Job Header -->
+    <div class="job-header-card">
+      <div class="job-header-top">
+        <div class="job-header-left">
+          <div class="company-logo">TCS</div>
+          <div>
+            <div class="job-title">Junior Software Developer</div>
+            <div class="company-name">Tata Consultancy Services</div>
+            <a href="#" class="company-link">View Company Profile →</a>
+          </div>
+        </div>
+        <div class="job-header-right">
+          <button class="bookmark-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+          </button>
+          <span class="feat-badge">⭐ Featured</span>
+        </div>
+      </div>
+
+      <div class="job-meta-row">
+        <div class="meta-item">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          Bangalore, Karnataka
+        </div>
+        <div class="meta-item">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.07-.44.18-.9.18-1.37C18 3.15 16.85 2 15 2H9C7.15 2 6 3.15 6 4.63c0 .47.11.93.18 1.37H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg>
+          Full-time
+        </div>
+        <div class="meta-item">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 5H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+          Posted 2 days ago
+        </div>
+        <div class="meta-item">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+          Fresher (0–1 year)
+        </div>
+        <div class="meta-item">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          142 Applicants
+        </div>
+      </div>
+
+      <div class="job-tags">
+        <span class="job-tag">React</span>
+        <span class="job-tag">Node.js</span>
+        <span class="job-tag">JavaScript</span>
+        <span class="job-tag">MongoDB</span>
+        <span class="job-tag gray">B.Tech / BE</span>
+        <span class="job-tag gray">2024/2025 Batch</span>
+      </div>
+    </div>
+
+    <!-- Job Description -->
+    <div class="detail-card">
+      <h3>📋 Job Description</h3>
+      <p>TCS is looking for enthusiastic and talented fresher Software Developers to join our growing team. You will work on cutting-edge projects for global clients across various industries including banking, retail, and healthcare.</p>
+      <p>As a Junior Software Developer, you will collaborate with senior engineers to design, develop, and maintain web applications. This is a fantastic opportunity for freshers to kickstart their career at one of India's largest IT companies.</p>
+    </div>
+
+    <!-- Responsibilities -->
+    <div class="detail-card">
+      <h3>💼 Key Responsibilities</h3>
+      <ul>
+        <li>Develop and maintain web applications using React.js and Node.js</li>
+        <li>Write clean, efficient, and well-documented code</li>
+        <li>Collaborate with cross-functional teams to define and implement features</li>
+        <li>Participate in code reviews and contribute to team best practices</li>
+        <li>Debug and resolve software defects and performance issues</li>
+        <li>Learn and adapt to new technologies as required by projects</li>
+      </ul>
+    </div>
+
+    <!-- Requirements -->
+    <div class="detail-card">
+      <h3>✅ Requirements</h3>
+      <ul>
+        <li>B.Tech / BE in Computer Science, IT or related field (2024/2025 batch)</li>
+        <li>Basic knowledge of HTML, CSS, JavaScript</li>
+        <li>Familiarity with React.js or any frontend framework</li>
+        <li>Understanding of RESTful APIs and databases</li>
+        <li>Good communication and teamwork skills</li>
+        <li>60% or above throughout academics (10th, 12th, Graduation)</li>
+      </ul>
+    </div>
+
+    <!-- Benefits -->
+    <div class="detail-card">
+      <h3>🎁 Perks & Benefits</h3>
+      <ul>
+        <li>Competitive salary of ₹4–6 LPA with performance bonuses</li>
+        <li>Health insurance for you and your family</li>
+        <li>Free meals and transport facility</li>
+        <li>Access to TCS learning platforms and certifications</li>
+        <li>Work from home flexibility (2 days/week)</li>
+        <li>Annual appraisals and fast-track growth opportunities</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- Apply Card -->
+    <div class="apply-card">
+      <div class="salary-big">₹4 – 6 LPA</div>
+      <div class="salary-label">Annual Package (CTC)</div>
+
+      <div class="apply-info">
+        <div class="apply-info-item">
+          <span>Job Type</span>
+          <span>Full-time</span>
+        </div>
+        <div class="apply-info-item">
+          <span>Location</span>
+          <span>Bangalore</span>
+        </div>
+        <div class="apply-info-item">
+          <span>Experience</span>
+          <span>Fresher</span>
+        </div>
+        <div class="apply-info-item">
+          <span>Openings</span>
+          <span>25 positions</span>
+        </div>
+        <div class="apply-info-item">
+          <span>Last Date</span>
+          <span>March 15, 2026</span>
+        </div>
+      </div>
+
+     <button class="btn-apply-now" onclick="applyNow()">Apply Now →</button>
+      <button class="btn-save-job">🔖 Save Job</button>
+    </div>
+
+    <!-- Company Card -->
+    <div class="company-card">
+      <h4>🏢 About the Company</h4>
+      <div class="company-card-top">
+        <div class="company-card-logo">TCS</div>
+        <div>
+          <div class="company-card-name">Tata Consultancy Services</div>
+          <div class="company-card-type">IT Services · Public Company</div>
+        </div>
+      </div>
+      <p>TCS is a global leader in IT services, consulting and business solutions with a large network of innovation and delivery centers.</p>
+      <div class="company-stats">
+        <div class="cstat"><div class="cstat-num">600K+</div><div class="cstat-label">Employees</div></div>
+        <div class="cstat"><div class="cstat-num">46+</div><div class="cstat-label">Countries</div></div>
+        <div class="cstat"><div class="cstat-num">1,240</div><div class="cstat-label">Open Jobs</div></div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+<script>
+// Load job details from URL parameter
+async function loadJobDetail() {
+  const params = new URLSearchParams(window.location.search);
+  const jobId = params.get("id");
+
+  if (!jobId) return;
+
+  try {
+    const res = await fetch(`http://localhost:5000/api/jobs/${jobId}`);
+    const job = await res.json();
+
+    // Update job details
+    document.querySelector(".job-title").textContent = job.title;
+    document.querySelector(".company-name").textContent = job.company;
+    document.querySelector(".salary-big").textContent = `₹${job.salary_min/100000}–${job.salary_max/100000} LPA`;
+
+    // Update meta info
+    const metaItems = document.querySelectorAll(".meta-item");
+    if (metaItems[0]) metaItems[0].innerHTML = `📍 ${job.location}`;
+    if (metaItems[1]) metaItems[1].innerHTML = `💼 ${job.job_type}`;
+
+    // Update description
+    const paras = document.querySelectorAll(".detail-card p");
+    if (paras[0]) paras[0].textContent = job.description;
+    if (paras[1]) paras[1].textContent = job.requirements;
+
+  } catch (err) {
+    console.error("Failed to load job!", err);
+  }
+}
+
+// Apply for job
+async function applyNow() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user) {
+    alert("Please login first!");
+    window.location.href = "login.html";
+    return;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const jobId = params.get("id");
+
+  try {
+    const res = await fetch("http://localhost:5000/api/applications", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: jobId, candidate_id: user.id })
+    });
+    const data = await res.json();
+    alert(data.message);
+  } catch (err) {
+    alert("Failed to apply!");
+  }
+}
+
+loadJobDetail();
+</script>
+</body>
+</html>

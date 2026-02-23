@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FreshersJob – My Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal: #3aafc4;
+      --teal-dark: #1a7a94;
+      --teal-light: #e8f7fa;
+      --slate: #4a6070;
+      --dark: #1c2b35;
+      --gray: #6b7f8c;
+      --light: #f5f8fa;
+      --white: #ffffff;
+      --star: #f5a623;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--light);
+      color: var(--dark);
+      overflow-x: hidden;
+    }
+
+    /* NAVBAR */
+    nav {
+      background: var(--white);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      position: sticky; top: 0; z-index: 100;
+      padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; gap: 16px;
+    }
+    .logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; }
+    .nav-search {
+      flex: 1; max-width: 400px; position: relative;
+      display: flex; align-items: center;
+    }
+    .nav-search svg { position: absolute; left: 12px; color: var(--gray); width: 16px; height: 16px; }
+    .nav-search input {
+      width: 100%; padding: 9px 16px 9px 36px;
+      border: 2px solid #dde4e8; border-radius: 25px;
+      font-family: 'Nunito', sans-serif; font-size: 0.88rem;
+      color: var(--dark); outline: none; background: var(--light);
+      transition: border-color 0.2s;
+    }
+    .nav-search input:focus { border-color: var(--teal); background: white; }
+    .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; }
+    .nav-links a {
+      text-decoration: none; color: var(--slate); font-weight: 700; font-size: 0.78rem;
+      padding: 6px 10px; border-radius: 8px;
+      transition: background 0.2s, color 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .nav-links a:hover, .nav-links a.active { background: var(--teal-light); color: var(--teal-dark); }
+    .nav-links svg { width: 20px; height: 20px; }
+    .nav-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 800; font-size: 0.85rem; cursor: pointer;
+    }
+
+    /* LAYOUT */
+    .profile-layout {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+    }
+
+    /* MAIN */
+    .main-content { display: flex; flex-direction: column; gap: 16px; }
+
+    /* Profile Header */
+    .profile-header-card {
+      background: white; border-radius: 16px;
+      overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .profile-banner {
+      height: 120px;
+      background: linear-gradient(135deg, var(--teal-dark), var(--teal));
+      position: relative;
+    }
+    .banner-edit {
+      position: absolute; top: 12px; right: 12px;
+      background: rgba(255,255,255,0.2); border: none;
+      border-radius: 8px; padding: 6px 12px;
+      color: white; font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 0.78rem; cursor: pointer;
+    }
+    .profile-header-body { padding: 0 24px 24px; }
+    .profile-avatar-wrap {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 16px;
+    }
+    .profile-avatar {
+      width: 90px; height: 90px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 900; font-size: 1.8rem;
+      margin-top: -45px; border: 4px solid white;
+      flex-shrink: 0;
+    }
+    .btn-edit-profile {
+      padding: 9px 20px;
+      border: 2px solid var(--teal); border-radius: 25px;
+      background: transparent; color: var(--teal-dark);
+      font-family: 'Nunito', sans-serif; font-weight: 700;
+      font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-edit-profile:hover { background: var(--teal-light); }
+
+    .profile-name { font-size: 1.3rem; font-weight: 900; color: var(--dark); margin-bottom: 4px; }
+    .profile-title { font-size: 0.92rem; color: var(--slate); font-weight: 600; margin-bottom: 8px; }
+    .profile-location { font-size: 0.82rem; color: var(--gray); margin-bottom: 14px; display: flex; align-items: center; gap: 4px; }
+
+    .profile-stats {
+      display: flex; gap: 24px;
+      padding: 14px 0; border-top: 1px solid #f0f2f4;
+    }
+    .pstat { text-align: center; }
+    .pstat-num { font-weight: 900; font-size: 1.1rem; color: var(--teal-dark); }
+    .pstat-label { font-size: 0.72rem; color: var(--gray); font-weight: 600; }
+
+    /* Profile Completion */
+    .completion-card {
+      background: white; border-radius: 16px; padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .completion-card h4 { font-size: 0.92rem; font-weight: 900; color: var(--dark); margin-bottom: 6px; }
+    .completion-card p { font-size: 0.8rem; color: var(--gray); margin-bottom: 12px; }
+    .progress-bar {
+      height: 8px; background: #f0f2f4; border-radius: 10px; overflow: hidden; margin-bottom: 6px;
+    }
+    .progress-fill {
+      height: 100%; width: 65%;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      border-radius: 10px;
+    }
+    .progress-label { font-size: 0.78rem; color: var(--teal-dark); font-weight: 700; }
+
+    /* Section Cards */
+    .section-card {
+      background: white; border-radius: 16px; padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .section-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px; padding-bottom: 12px;
+      border-bottom: 2px solid var(--light);
+    }
+    .section-header h3 { font-size: 1rem; font-weight: 900; color: var(--dark); }
+    .btn-add {
+      background: none; border: none; cursor: pointer;
+      color: var(--teal-dark); font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 0.82rem; display: flex; align-items: center; gap: 4px;
+    }
+    .btn-add:hover { text-decoration: underline; }
+
+    /* About */
+    .about-text {
+      font-size: 0.9rem; color: var(--slate); line-height: 1.8;
+    }
+
+    /* Experience */
+    .exp-item { display: flex; gap: 14px; margin-bottom: 20px; }
+    .exp-item:last-child { margin-bottom: 0; }
+    .exp-logo {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: var(--teal-light);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 0.85rem; color: var(--teal-dark); flex-shrink: 0;
+    }
+    .exp-title { font-weight: 800; font-size: 0.92rem; color: var(--dark); margin-bottom: 2px; }
+    .exp-company { font-size: 0.82rem; color: var(--slate); font-weight: 600; margin-bottom: 2px; }
+    .exp-date { font-size: 0.75rem; color: var(--gray); margin-bottom: 6px; }
+    .exp-desc { font-size: 0.82rem; color: var(--slate); line-height: 1.6; }
+
+    /* Education */
+    .edu-item { display: flex; gap: 14px; margin-bottom: 20px; }
+    .edu-item:last-child { margin-bottom: 0; }
+    .edu-logo {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: #fff8e8;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; flex-shrink: 0;
+    }
+    .edu-degree { font-weight: 800; font-size: 0.92rem; color: var(--dark); margin-bottom: 2px; }
+    .edu-school { font-size: 0.82rem; color: var(--slate); font-weight: 600; margin-bottom: 2px; }
+    .edu-date { font-size: 0.75rem; color: var(--gray); margin-bottom: 4px; }
+    .edu-grade { font-size: 0.78rem; color: var(--teal-dark); font-weight: 700; }
+
+    /* Skills */
+    .skills-wrap { display: flex; flex-wrap: wrap; gap: 10px; }
+    .skill-tag {
+      background: var(--teal-light); color: var(--teal-dark);
+      padding: 7px 16px; border-radius: 20px;
+      font-size: 0.82rem; font-weight: 700; cursor: pointer;
+      transition: all 0.2s; border: 2px solid transparent;
+    }
+    .skill-tag:hover { border-color: var(--teal); }
+
+    /* RIGHT SIDEBAR */
+    .sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+    .sidebar-card {
+      background: white; border-radius: 16px; padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .sidebar-card h4 {
+      font-size: 0.88rem; font-weight: 900; color: var(--dark);
+      margin-bottom: 14px; padding-bottom: 8px;
+      border-bottom: 2px solid var(--light);
+    }
+
+    /* Applied Jobs */
+    .applied-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid #f0f2f4;
+    }
+    .applied-item:last-child { border-bottom: none; }
+    .applied-logo {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: var(--teal-light);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 0.72rem; color: var(--teal-dark); flex-shrink: 0;
+    }
+    .applied-title { font-weight: 800; font-size: 0.82rem; color: var(--dark); }
+    .applied-company { font-size: 0.72rem; color: var(--gray); }
+    .status-badge {
+      margin-left: auto; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.7rem; font-weight: 800; flex-shrink: 0;
+    }
+    .status-pending { background: #fff8e8; color: #b07d00; }
+    .status-review { background: var(--teal-light); color: var(--teal-dark); }
+    .status-rejected { background: #fef0f0; color: #e53935; }
+
+    /* Resume Card */
+    .resume-card {
+      background: linear-gradient(135deg, var(--teal-dark), var(--teal));
+      border-radius: 16px; padding: 20px; color: white;
+    }
+    .resume-card h4 { font-size: 0.95rem; font-weight: 900; margin-bottom: 8px; }
+    .resume-card p { font-size: 0.82rem; opacity: 0.88; line-height: 1.6; margin-bottom: 14px; }
+    .btn-upload {
+      background: white; color: var(--teal-dark);
+      border: none; border-radius: 20px; padding: 8px 18px;
+      font-family: 'Nunito', sans-serif; font-weight: 800;
+      font-size: 0.82rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-upload:hover { transform: translateY(-1px); }
+
+    @media (max-width: 768px) {
+      .profile-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="../index.html" class="logo">
+    <img src="../images/logo.png" height="50" alt="FreshersJob Logo" style="margin-left: 50px;">
+  </a>
+  <div class="nav-search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Search jobs, companies, skills..." />
+  </div>
+  <ul class="nav-links">
+    <li><a href="../index.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</a></li>
+    <li><a href="feed.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.07-.44.18-.9.18-1.37C18 3.15 16.85 2 15 2H9C7.15 2 6 3.15 6 4.63c0 .47.11.93.18 1.37H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg>Jobs</a></li>
+    <li><a href="network.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Network</a></li>
+    <li><a href="messages.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>Messages</a></li>
+    <li><a href="notifications.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>Alerts</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="avatar">YO</div>
+  </div>
+</nav>
+
+<!-- PROFILE LAYOUT -->
+<div class="profile-layout">
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- Profile Header -->
+    <div class="profile-header-card">
+      <div class="profile-banner">
+        <button class="banner-edit">✏️ Edit Banner</button>
+      </div>
+      <div class="profile-header-body">
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar">YO</div>
+          <button class="btn-edit-profile">✏️ Edit Profile</button>
+        </div>
+        <div class="profile-name">Your Name</div>
+        <div class="profile-title">Fresher · B.Tech Computer Science · 2025 Batch</div>
+        <div class="profile-location">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+          Bangalore, Karnataka · Open to Work 🟢
+        </div>
+        <div class="profile-stats">
+          <div class="pstat"><div class="pstat-num">12</div><div class="pstat-label">Jobs Applied</div></div>
+          <div class="pstat"><div class="pstat-num">5</div><div class="pstat-label">Saved Jobs</div></div>
+          <div class="pstat"><div class="pstat-num">2</div><div class="pstat-label">Interviews</div></div>
+          <div class="pstat"><div class="pstat-num">48</div><div class="pstat-label">Connections</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Completion -->
+    <div class="completion-card">
+      <h4>📊 Profile Completion — 65%</h4>
+      <p>Complete your profile to get 3x more interview calls!</p>
+      <div class="progress-bar"><div class="progress-fill"></div></div>
+      <div class="progress-label">Add your skills and resume to reach 100%</div>
+    </div>
+
+    <!-- About -->
+    <div class="section-card">
+      <div class="section-header">
+        <h3>👤 About</h3>
+        <button class="btn-add">✏️ Edit</button>
+      </div>
+      <p class="about-text">
+        I am a passionate Computer Science fresher from Bangalore with a strong interest in full-stack web development. I enjoy building user-friendly applications and am eager to contribute to real-world projects. I am a quick learner, team player, and always excited to take on new challenges in the tech industry.
+      </p>
+    </div>
+
+    <!-- Experience -->
+    <div class="section-card">
+      <div class="section-header">
+        <h3>💼 Experience</h3>
+        <button class="btn-add">+ Add</button>
+      </div>
+      <div class="exp-item">
+        <div class="exp-logo">IN</div>
+        <div>
+          <div class="exp-title">Web Development Intern</div>
+          <div class="exp-company">Infosys BPM · Internship</div>
+          <div class="exp-date">June 2024 – August 2024 · 3 months</div>
+          <div class="exp-desc">Worked on building responsive UI components using React.js. Collaborated with senior developers to implement REST APIs and improve application performance.</div>
+        </div>
+      </div>
+      <div class="exp-item">
+        <div class="exp-logo" style="background:#f5f0ff;color:#7c3aed">TC</div>
+        <div>
+          <div class="exp-title">Frontend Developer Intern</div>
+          <div class="exp-company">TechCorp Startup · Internship</div>
+          <div class="exp-date">Jan 2024 – March 2024 · 3 months</div>
+          <div class="exp-desc">Designed and developed landing pages using HTML, CSS and JavaScript. Improved website load time by 30% through optimization techniques.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Education -->
+    <div class="section-card">
+      <div class="section-header">
+        <h3>🎓 Education</h3>
+        <button class="btn-add">+ Add</button>
+      </div>
+      <div class="edu-item">
+        <div class="edu-logo">🏛️</div>
+        <div>
+          <div class="edu-degree">B.Tech in Computer Science</div>
+          <div class="edu-school">Bangalore Institute of Technology</div>
+          <div class="edu-date">2021 – 2025</div>
+          <div class="edu-grade">CGPA: 8.4 / 10</div>
+        </div>
+      </div>
+      <div class="edu-item">
+        <div class="edu-logo">🏫</div>
+        <div>
+          <div class="edu-degree">Class 12 (PCM + CS)</div>
+          <div class="edu-school">Delhi Public School, Bangalore</div>
+          <div class="edu-date">2019 – 2021</div>
+          <div class="edu-grade">Percentage: 92%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skills -->
+    <div class="section-card">
+      <div class="section-header">
+        <h3>🛠️ Skills</h3>
+        <button class="btn-add">+ Add</button>
+      </div>
+      <div class="skills-wrap">
+        <span class="skill-tag">React.js</span>
+        <span class="skill-tag">Node.js</span>
+        <span class="skill-tag">JavaScript</span>
+        <span class="skill-tag">HTML & CSS</span>
+        <span class="skill-tag">Python</span>
+        <span class="skill-tag">SQL</span>
+        <span class="skill-tag">MongoDB</span>
+        <span class="skill-tag">Git & GitHub</span>
+        <span class="skill-tag">Figma</span>
+        <span class="skill-tag">REST APIs</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- Resume Upload -->
+    <div class="resume-card">
+      <h4>📄 Your Resume</h4>
+      <p>Upload your latest resume to apply faster and get noticed by recruiters!</p>
+      <button class="btn-upload">📤 Upload Resume</button>
+    </div>
+
+    <!-- Applied Jobs -->
+    <div class="sidebar-card">
+      <h4>📋 Recent Applications</h4>
+      <div class="applied-item">
+        <div class="applied-logo">TCS</div>
+        <div>
+          <div class="applied-title">Junior Developer</div>
+          <div class="applied-company">TCS</div>
+        </div>
+        <span class="status-badge status-review">In Review</span>
+      </div>
+      <div class="applied-item">
+        <div class="applied-logo" style="background:#e8f4fd;color:#1a73e8">G</div>
+        <div>
+          <div class="applied-title">Data Analyst Intern</div>
+          <div class="applied-company">Google</div>
+        </div>
+        <span class="status-badge status-pending">Pending</span>
+      </div>
+      <div class="applied-item">
+        <div class="applied-logo" style="background:#fff0e8;color:#f77737">IN</div>
+        <div>
+          <div class="applied-title">UI/UX Designer</div>
+          <div class="applied-company">Infosys</div>
+        </div>
+        <span class="status-badge status-rejected">Rejected</span>
+      </div>
+      <div class="applied-item">
+        <div class="applied-logo" style="background:#f0f9f0;color:#2d8a4e">WI</div>
+        <div>
+          <div class="applied-title">Marketing Executive</div>
+          <div class="applied-company">Wipro</div>
+        </div>
+        <span class="status-badge status-pending">Pending</span>
+      </div>
+    </div>
+
+    <!-- Profile Tips -->
+    <div class="sidebar-card">
+      <h4>💡 Tips to Get Hired</h4>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:0.82rem;color:var(--slate);display:flex;gap:8px;align-items:flex-start;">
+          <span>✅</span> Add a professional profile photo
+        </div>
+        <div style="font-size:0.82rem;color:var(--slate);display:flex;gap:8px;align-items:flex-start;">
+          <span>✅</span> Upload your updated resume
+        </div>
+        <div style="font-size:0.82rem;color:var(--slate);display:flex;gap:8px;align-items:flex-start;">
+          <span>⬜</span> Add at least 5 skills
+        </div>
+        <div style="font-size:0.82rem;color:var(--slate);display:flex;gap:8px;align-items:flex-start;">
+          <span>⬜</span> Write a strong About section
+        </div>
+        <div style="font-size:0.82rem;color:var(--slate);display:flex;gap:8px;align-items:flex-start;">
+          <span>⬜</span> Add your internship experience
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+<script>
+// Load user data from localStorage
+function loadProfile() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  // Update name
+  const initials = user.first_name.charAt(0) + user.last_name.charAt(0);
+  document.querySelector(".profile-name").textContent = user.first_name + " " + user.last_name;
+  document.querySelector(".profile-avatar").textContent = initials.toUpperCase();
+  document.querySelector(".avatar").textContent = initials.toUpperCase();
+}
+
+// Load applications from backend
+async function loadApplications() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user) return;
+
+  try {
+    const res = await fetch(`http://localhost:5000/api/applications/candidate/${user.id}`);
+    const apps = await res.json();
+
+    const container = document.querySelector(".sidebar-card h4").closest(".sidebar-card");
+    container.innerHTML = "<h4>📋 Recent Applications</h4>";
+
+    if (apps.length === 0) {
+      container.innerHTML += `<p style="font-size:0.82rem;color:var(--gray);">No applications yet. Start applying! 🚀</p>`;
+      return;
+    }
+
+    apps.slice(0, 4).forEach(app => {
+      const initials = app.company.substring(0, 2).toUpperCase();
+      container.innerHTML += `
+        <div class="applied-item">
+          <div class="applied-logo">${initials}</div>
+          <div>
+            <div class="applied-title">${app.title}</div>
+            <div class="applied-company">${app.company}</div>
+          </div>
+          <span class="status-badge status-${app.status}">${app.status}</span>
+        </div>
+      `;
+    });
+  } catch (err) {
+    console.error("Failed to load applications!", err);
+  }
+}
+
+loadProfile();
+loadApplications();
+</script>
+</body>
+</html>

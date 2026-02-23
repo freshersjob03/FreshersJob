@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FreshersJob – Find Your Dream Job</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal: #3aafc4;
+      --teal-dark: #1a7a94;
+      --teal-light: #e8f7fa;
+      --slate: #4a6070;
+      --dark: #1c2b35;
+      --gray: #6b7f8c;
+      --light: #f5f8fa;
+      --white: #ffffff;
+      --star: #f5a623;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Nunito', sans-serif; background: var(--light); color: var(--dark); overflow-x: hidden; }
+
+    /* NAVBAR */
+    nav {
+      background: var(--white);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      position: sticky; top: 0; z-index: 100;
+      padding: 0 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 68px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none;
+    }
+    .logo-text { font-size: 1.5rem; font-weight: 900; }
+    .logo-text .t1 { color: var(--teal-dark); }
+    .logo-text .t2 { color: var(--gray); }
+    .nav-links { display: flex; align-items: center; gap: 20px; list-style: none; }
+    .nav-links a {
+      text-decoration: none; color: var(--slate); font-weight: 700; font-size: 0.82rem;
+      padding: 8px 12px; border-radius: 8px;
+      transition: background 0.2s, color 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+    }
+   .nav-links a:hover, .nav-links a.active { background: var(--teal-light); color: var(--teal-dark); }
+    .nav-links svg { width: 22px; height: 22px; }
+    .nav-actions { display: flex; gap: 25px; align-items: center; }
+    .btn { padding: 10px 22px; border-radius: 25px; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-outline { background: transparent; border: 2px solid var(--teal); color: var(--teal-dark); }
+    .btn-outline:hover { background: var(--teal-light); }
+    .btn-primary { background: linear-gradient(135deg, var(--teal), var(--teal-dark)); color: white; box-shadow: 0 4px 14px rgba(58,175,196,0.35); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(58,175,196,0.45); }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #e8f7fa 0%, #f0fbfe 50%, #d6f0f5 100%);
+      padding: 80px 40px; text-align: center; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(58,175,196,0.12) 0%, transparent 70%);
+      top: -200px; left: -100px; border-radius: 50%;
+    }
+    .hero-badge {
+      display: inline-block; background: var(--teal-light); color: var(--teal-dark);
+      font-weight: 700; font-size: 0.8rem; padding: 6px 16px; border-radius: 20px;
+      margin-bottom: 20px; border: 1px solid rgba(58,175,196,0.3);
+      text-transform: uppercase; letter-spacing: 0.05em; position: relative; z-index: 1;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 900; line-height: 1.15;
+      color: var(--dark); margin-bottom: 16px; position: relative; z-index: 1;
+    }
+    .hero h1 em { font-style: normal; color: var(--teal); }
+    .hero p {
+      font-size: 1.1rem; color: var(--gray); max-width: 540px; margin: 0 auto 36px;
+      line-height: 1.7; position: relative; z-index: 1;
+    }
+    .search-bar {
+      background: white; border-radius: 50px;
+      display: flex; align-items: center;
+      max-width: 680px; margin: 0 auto 20px;
+      padding: 8px 8px 8px 24px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      position: relative; z-index: 1;
+    }
+    .search-bar input {
+      flex: 1; border: none; outline: none; font-family: 'Nunito', sans-serif;
+      font-size: 1rem; color: var(--dark); padding: 6px 14px; background: transparent;
+    }
+    .search-bar input::placeholder { color: #aab5bc; }
+    .search-divider { width: 1px; height: 28px; background: #e0e8ec; margin: 0 8px; }
+    .search-bar select {
+      border: none; outline: none; font-family: 'Nunito', sans-serif;
+      font-size: 0.95rem; color: var(--slate); background: transparent; padding: 6px 10px; cursor: pointer;
+    }
+    .search-btn {
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark)); color: white;
+      border: none; border-radius: 40px; padding: 12px 28px;
+      font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.95rem;
+      cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+    }
+    .search-btn:hover { transform: scale(1.03); }
+    .popular-tags {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; flex-wrap: wrap; position: relative; z-index: 1;
+    }
+    .popular-tags span { color: var(--gray); font-size: 0.88rem; font-weight: 600; }
+    .tag {
+      background: white; color: var(--teal-dark);
+      border: 1.5px solid rgba(58,175,196,0.4);
+      padding: 5px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .tag:hover { background: var(--teal); color: white; border-color: var(--teal); }
+
+    /* STATS */
+    .stats-bar {
+      background: var(--white); padding: 28px 40px;
+      display: flex; justify-content: center; gap: 60px;
+      border-bottom: 1px solid #eef2f4; flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-num { font-size: 1.8rem; font-weight: 900; color: var(--teal-dark); }
+    .stat-label { font-size: 0.82rem; color: var(--gray); font-weight: 600; margin-top: 2px; }
+
+    /* SECTIONS */
+    section { padding: 70px 40px; }
+    .section-header { text-align: center; margin-bottom: 48px; }
+    .section-header h2 { font-size: 2rem; font-weight: 900; color: var(--dark); margin-bottom: 10px; }
+    .section-header p { color: var(--gray); font-size: 1rem; }
+
+    /* CATEGORIES */
+    .categories { background: var(--white); }
+    .cat-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px; max-width: 1100px; margin: 0 auto;
+    }
+    .cat-card {
+      background: var(--light); border: 2px solid transparent; border-radius: 16px;
+      padding: 24px 16px; text-align: center; cursor: pointer; transition: all 0.25s;
+    }
+    .cat-card:hover { border-color: var(--teal); background: var(--teal-light); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(58,175,196,0.15); }
+    .cat-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      border-radius: 14px; margin: 0 auto 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cat-card h4 { font-size: 0.88rem; font-weight: 800; color: var(--dark); margin-bottom: 4px; }
+    .cat-card span { font-size: 0.75rem; color: var(--gray); font-weight: 600; }
+
+    /* FEATURED JOBS */
+    .featured { background: var(--light); }
+    .jobs-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px; max-width: 1100px; margin: 0 auto 36px;
+    }
+    .job-card {
+      background: white; border-radius: 16px; padding: 24px;
+      border: 2px solid transparent; transition: all 0.25s; cursor: pointer; position: relative;
+    }
+    .job-card:hover { border-color: var(--teal); transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.08); }
+    .job-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+    .company-logo {
+      width: 48px; height: 48px; border-radius: 12px; background: var(--teal-light);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 1rem; color: var(--teal-dark); flex-shrink: 0;
+    }
+    .bookmark-btn { background: none; border: none; cursor: pointer; color: var(--gray); transition: color 0.2s; padding: 4px; }
+    .bookmark-btn:hover { color: var(--teal); }
+    .feat-badge {
+      position: absolute; top: 16px; right: 60px;
+      background: var(--star); color: white;
+      font-size: 0.68rem; font-weight: 800; padding: 3px 10px; border-radius: 12px;
+    }
+    .job-title { font-size: 1rem; font-weight: 800; color: var(--dark); margin-bottom: 4px; }
+    .company-name { font-size: 0.88rem; color: var(--gray); font-weight: 600; margin-bottom: 14px; }
+    .job-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .job-tag { background: var(--teal-light); color: var(--teal-dark); font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+    .job-tag.gray { background: #f0f2f4; color: var(--slate); }
+    .job-footer { display: flex; justify-content: space-between; align-items: center; }
+    .salary { font-weight: 800; color: var(--teal-dark); font-size: 0.95rem; }
+    .posted { font-size: 0.78rem; color: var(--gray); display: flex; align-items: center; gap: 4px; }
+    .view-all { text-align: center; }
+
+    /* HOW IT WORKS */
+    .how { background: white; }
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 32px; max-width: 900px; margin: 0 auto; }
+    .step { text-align: center; }
+    .step-num {
+      width: 60px; height: 60px;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      color: white; font-size: 1.5rem; font-weight: 900; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px; box-shadow: 0 6px 18px rgba(58,175,196,0.3);
+    }
+    .step h4 { font-size: 1rem; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+    .step p { font-size: 0.88rem; color: var(--gray); line-height: 1.6; }
+
+    /* TESTIMONIALS */
+    .testimonials { background: var(--light); }
+    .testi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; }
+    .testi-card { background: white; border-radius: 16px; padding: 24px; border-left: 4px solid var(--teal); }
+    .stars { color: var(--star); font-size: 1rem; margin-bottom: 12px; }
+    .testi-text { color: var(--slate); font-size: 0.92rem; line-height: 1.7; margin-bottom: 16px; font-style: italic; }
+    .testi-author { display: flex; align-items: center; gap: 12px; }
+    .author-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 800; font-size: 0.9rem;
+    }
+    .author-name { font-weight: 800; font-size: 0.9rem; color: var(--dark); }
+    .author-role { font-size: 0.78rem; color: var(--gray); }
+
+    /* CTA */
+    .cta-section { background: linear-gradient(135deg, var(--teal-dark), var(--teal)); padding: 80px 40px; text-align: center; color: white; }
+    .cta-section h2 { font-size: 2.2rem; font-weight: 900; margin-bottom: 14px; }
+    .cta-section p { font-size: 1.05rem; opacity: 0.88; margin-bottom: 32px; max-width: 500px; margin-left: auto; margin-right: auto; }
+    .cta-buttons { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    .btn-white { background: white; color: var(--teal-dark); padding: 14px 32px; border-radius: 30px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+    .btn-white:hover { transform: translateY(-2px); }
+    .btn-ghost { background: transparent; color: white; padding: 14px 32px; border-radius: 30px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem; border: 2px solid rgba(255,255,255,0.6); cursor: pointer; transition: all 0.2s; }
+    .btn-ghost:hover { background: rgba(255,255,255,0.15); border-color: white; }
+
+    /* FOOTER */
+    footer { background: var(--dark); color: #8a9baa; padding: 50px 40px 24px; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; max-width: 1100px; margin: 0 auto 40px; }
+    .footer-brand p { font-size: 0.88rem; line-height: 1.7; color: #6a7f8e; margin-top: 10px; }
+    .footer-col h5 { color: white; font-weight: 800; margin-bottom: 16px; font-size: 0.9rem; }
+    .footer-col a { display: block; color: #6a7f8e; text-decoration: none; font-size: 0.85rem; margin-bottom: 8px; transition: color 0.2s; }
+    .footer-col a:hover { color: var(--teal); }
+    .footer-bottom { border-top: 1px solid #2a3b46; padding-top: 20px; text-align: center; font-size: 0.82rem; color: #4a6070; max-width: 1100px; margin: 0 auto; }
+
+    /* Animations */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    .hero h1 { animation: fadeUp 0.6s ease forwards; }
+    .hero p { animation: fadeUp 0.6s ease 0.1s forwards; opacity: 0; }
+    .search-bar { animation: fadeUp 0.6s ease 0.2s forwards; opacity: 0; }
+    .popular-tags { animation: fadeUp 0.6s ease 0.3s forwards; opacity: 0; }
+
+    @media (max-width: 768px) {
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .hero { padding: 50px 20px; }
+      .stats-bar { gap: 24px; padding: 20px; }
+      section { padding: 50px 20px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="#" class="logo">
+  <img src="images/logo.png" height="50" style="margin-left: 50px; height: 50px;">
+    <div class="logo-text"><span class="t1">Freshers</span><span class="t2">Job</span></div>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Home
+    </a></li>
+    <li><a href="#">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.07-.44.18-.9.18-1.37C18 3.15 16.85 2 15 2H9C7.15 2 6 3.15 6 4.63c0 .47.11.93.18 1.37H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-9-1.37C11 4.28 11.28 4 11.63 4h.75c.34 0 .62.28.62.63V6H11V4.63zM20 19H4V8h16v11z"/></svg>
+      Jobs
+    </a></li>
+    <li><a href="#">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      Network
+    </a></li>
+    <li><a href="#">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+      Messages
+    </a></li>
+    <li><a href="#">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+      Alerts
+    </a></li>
+  </ul>
+
+  <div class="nav-actions">
+    <button class="btn btn-outline">Sign In</button>
+    <button class="btn btn-primary">Get Started</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🎓 India's #1 Platform for Freshers</div>
+  <h1>Find Your <em>Dream Job</em><br/>Start Your Career Today</h1>
+  <p>Thousands of top companies are hiring freshers. Upload your resume, apply in one click, and land the job you deserve.</p>
+
+  <div class="search-bar">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7f8c" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Job title, skills or company..." />
+    <div class="search-divider"></div>
+    <select>
+      <option>All Locations</option>
+      <option>Bangalore</option>
+      <option>Mumbai</option>
+      <option>Delhi</option>
+      <option>Hyderabad</option>
+      <option>Chennai</option>
+      <option>Pune</option>
+    </select>
+    <button class="search-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Search Jobs
+    </button>
+  </div>
+
+  <div class="popular-tags">
+    <span>Popular:</span>
+    <span class="tag">Software Engineer</span>
+    <span class="tag">Data Analyst</span>
+    <span class="tag">UI/UX Designer</span>
+    <span class="tag">Marketing</span>
+    <span class="tag">Finance</span>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num">50,000+</div><div class="stat-label">Active Jobs</div></div>
+  <div class="stat"><div class="stat-num">12,000+</div><div class="stat-label">Companies Hiring</div></div>
+  <div class="stat"><div class="stat-num">2.5M+</div><div class="stat-label">Freshers Placed</div></div>
+  <div class="stat"><div class="stat-num">95%</div><div class="stat-label">Satisfaction Rate</div></div>
+</div>
+
+<!-- CATEGORIES -->
+<section class="categories">
+  <div class="section-header">
+    <h2>Browse by Category</h2>
+    <p>Find jobs in your field of interest</p>
+  </div>
+  <div class="cat-grid">
+    <div class="cat-card">
+      <div class="cat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg></div>
+      <h4>Software & IT</h4><span>18,240 Jobs</span>
+    </div>
+    <div class="cat-card">
+      <div class="cat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>
+      <h4>Marketing</h4><span>7,890 Jobs</span>
+    </div>
+    <div class="cat-card">
+      <div class="cat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div>
+      <h4>Finance</h4><span>5,120 Jobs</span>
+    </div>
+    <div class="cat-card">
+      <div class="cat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg></div>
+      <h4>Education</h4><span>4,300 Jobs</span>
+    </div>
+    <div class="cat-card">
+      <div class="cat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg></div>
+      <h4>Design</h4><span>3,560 Jobs</span>
+    </div>
+    <div class="cat-card">
+      <div class="cat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div>
+      <h4>Sales & CRM</h4><span>6,700 Jobs</span>
+    </div>
+    <div class="cat-card">
+      <div class="cat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div>
+      <h4>Media & PR</h4><span>2,800 Jobs</span>
+    </div>
+    <div class="cat-card">
+      <div class="cat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+      <h4>HR & Admin</h4><span>3,100 Jobs</span>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED JOBS -->
+<section class="featured">
+  <div class="section-header">
+    <h2>⭐ Featured Jobs for Freshers</h2>
+    <p>Hand-picked opportunities from top companies</p>
+  </div>
+  <div class="jobs-grid">
+
+    <div class="job-card">
+      <span class="feat-badge">⭐ Featured</span>
+      <div class="job-card-top">
+        <div class="company-logo">TCS</div>
+        <button class="bookmark-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
+      </div>
+      <div class="job-title">Junior Software Developer</div>
+      <div class="company-name">Tata Consultancy Services</div>
+      <div class="job-tags">
+        <span class="job-tag">React</span><span class="job-tag">Node.js</span>
+        <span class="job-tag gray">Full-time</span><span class="job-tag gray">Bangalore</span>
+      </div>
+      <div class="job-footer">
+        <span class="salary">₹4–6 LPA</span>
+        <span class="posted"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 5H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg> 2 days ago</span>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="company-logo" style="background:#e8f4fd;color:#1a73e8">G</div>
+        <button class="bookmark-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
+      </div>
+      <div class="job-title">Data Analyst Intern</div>
+      <div class="company-name">Google India</div>
+      <div class="job-tags">
+        <span class="job-tag">Python</span><span class="job-tag">SQL</span>
+        <span class="job-tag gray">Internship</span><span class="job-tag gray">Hyderabad</span>
+      </div>
+      <div class="job-footer">
+        <span class="salary">₹35,000/mo</span>
+        <span class="posted"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 5H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg> 1 day ago</span>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <span class="feat-badge">⭐ Featured</span>
+      <div class="job-card-top">
+        <div class="company-logo" style="background:#fff0e8;color:#f77737">IN</div>
+        <button class="bookmark-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
+      </div>
+      <div class="job-title">UI/UX Designer</div>
+      <div class="company-name">Infosys BPM</div>
+      <div class="job-tags">
+        <span class="job-tag">Figma</span><span class="job-tag">Adobe XD</span>
+        <span class="job-tag gray">Full-time</span><span class="job-tag gray">Pune</span>
+      </div>
+      <div class="job-footer">
+        <span class="salary">₹3.5–5 LPA</span>
+        <span class="posted"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 5H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg> 3 days ago</span>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="company-logo" style="background:#f0f9f0;color:#2d8a4e">WI</div>
+        <button class="bookmark-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
+      </div>
+      <div class="job-title">Digital Marketing Executive</div>
+      <div class="company-name">Wipro Technologies</div>
+      <div class="job-tags">
+        <span class="job-tag">SEO</span><span class="job-tag">Google Ads</span>
+        <span class="job-tag gray">Full-time</span><span class="job-tag gray">Delhi</span>
+      </div>
+      <div class="job-footer">
+        <span class="salary">₹3–4.5 LPA</span>
+        <span class="posted"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 5H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg> Today</span>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="company-logo" style="background:#fef0f0;color:#e53935">AZ</div>
+        <button class="bookmark-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
+      </div>
+      <div class="job-title">Cloud Support Associate</div>
+      <div class="company-name">Amazon Web Services</div>
+      <div class="job-tags">
+        <span class="job-tag">AWS</span><span class="job-tag">Linux</span>
+        <span class="job-tag gray">Full-time</span><span class="job-tag gray">Mumbai</span>
+      </div>
+      <div class="job-footer">
+        <span class="salary">₹5–7 LPA</span>
+        <span class="posted"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 5H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg> 5 hrs ago</span>
+      </div>
+    </div>
+
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="company-logo" style="background:#f5f0ff;color:#7c3aed">ZO</div>
+        <button class="bookmark-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
+      </div>
+      <div class="job-title">HR Executive (Freshers)</div>
+      <div class="company-name">Zoho Corporation</div>
+      <div class="job-tags">
+        <span class="job-tag">Recruitment</span><span class="job-tag">HR</span>
+        <span class="job-tag gray">Full-time</span><span class="job-tag gray">Chennai</span>
+      </div>
+      <div class="job-footer">
+        <span class="salary">₹3–4 LPA</span>
+        <span class="posted"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 5H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg> Yesterday</span>
+      </div>
+    </div>
+
+  </div>
+  <div class="view-all">
+    <button class="btn btn-primary" style="padding:14px 36px;font-size:1rem">View All 50,000+ Jobs →</button>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="section-header">
+    <h2>How FreshersJob Works</h2>
+    <p>Get hired in 3 simple steps</p>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h4>Create Your Profile</h4>
+      <p>Sign up and build your professional profile with your skills, education, and resume in minutes.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h4>Discover & Apply</h4>
+      <p>Browse thousands of freshers-friendly jobs and apply with a single click to the ones that excite you.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h4>Get Hired 🎉</h4>
+      <p>Connect with recruiters, attend interviews, and start your dream career journey!</p>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="section-header">
+    <h2>Success Stories</h2>
+    <p>Freshers who found their dream jobs through us</p>
+  </div>
+  <div class="testi-grid">
+    <div class="testi-card">
+      <div class="stars">★★★★★</div>
+      <p class="testi-text">"I was struggling to find a job after college. Within 3 weeks of joining FreshersJob, I got 5 interview calls and landed my first job at TCS!"</p>
+      <div class="testi-author">
+        <div class="author-avatar">RK</div>
+        <div><div class="author-name">Rahul Kumar</div><div class="author-role">Software Developer @ TCS</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="stars">★★★★★</div>
+      <p class="testi-text">"The job recommendations were spot-on for my profile. The application process was super easy and I got a great package at Infosys!"</p>
+      <div class="testi-author">
+        <div class="author-avatar">PS</div>
+        <div><div class="author-name">Priya Sharma</div><div class="author-role">UI Designer @ Infosys</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="stars">★★★★★</div>
+      <p class="testi-text">"As a 2024 graduate with no experience, I thought it'd be impossible to get hired. FreshersJob made it happen in just a month!"</p>
+      <div class="testi-author">
+        <div class="author-avatar">AM</div>
+        <div><div class="author-name">Arjun Mehta</div><div class="author-role">Data Analyst @ Wipro</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2>Ready to Launch Your Career? 🚀</h2>
+  <p>Join over 2.5 million freshers who found their dream jobs on FreshersJob. It's completely free to get started.</p>
+  <div class="cta-buttons">
+    <button class="btn-white">Create Free Account</button>
+    <button class="btn-ghost">Post a Job</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo-text"><span class="t1">Freshers</span><span style="color:#8a9baa">Job</span></div>
+      <p>India's most trusted job platform for freshers and early-career professionals. Find your dream job today.</p>
+    </div>
+    <div class="footer-col">
+      <h5>For Job Seekers</h5>
+      <a href="#">Browse Jobs</a>
+      <a href="#">Upload Resume</a>
+      <a href="#">Career Advice</a>
+      <a href="#">Job Alerts</a>
+      <a href="#">Saved Jobs</a>
+    </div>
+    <div class="footer-col">
+      <h5>For Employers</h5>
+      <a href="#">Post a Job</a>
+      <a href="#">Search Resumes</a>
+      <a href="#">Pricing Plans</a>
+      <a href="#">Recruiter Login</a>
+    </div>
+    <div class="footer-col">
+      <h5>Company</h5>
+      <a href="#">About Us</a>
+      <a href="#">Contact</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">Help Center</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    © 2026 FreshersJob · Find Your Dream Job · Made in India ❤️
+  </div>
+</footer>
+<script>
+  document.querySelectorAll(".nav-links a")[0].classList.add("active");
+// Fix navbar links
+document.querySelectorAll(".nav-links a")[0].href = "#";
+document.querySelectorAll(".nav-links a")[1].href = "pages/feed.html";
+document.querySelectorAll(".nav-links a")[2].href = "pages/network.html";
+document.querySelectorAll(".nav-links a")[3].href = "pages/messages.html";
+document.querySelectorAll(".nav-links a")[4].href = "pages/notifications.html";
+
+// Fix navbar buttons
+document.querySelector(".btn-outline").onclick = () => window.location.href = "pages/login.html";
+document.querySelector(".btn-primary").onclick = () => window.location.href = "pages/signup.html";
+
+// Fix category cards
+document.querySelectorAll(".cat-card").forEach(card => {
+  card.onclick = () => window.location.href = "pages/feed.html";
+});
+
+// Fix featured job cards
+document.querySelectorAll(".job-card").forEach(card => {
+  card.onclick = () => window.location.href = "pages/feed.html";
+});
+
+// Fix View All Jobs button
+document.querySelector(".view-all .btn-primary").onclick = () => window.location.href = "pages/feed.html";
+
+// Fix CTA buttons
+document.querySelector(".btn-white").onclick = () => window.location.href = "pages/signup.html";
+document.querySelector(".btn-ghost").onclick = () => window.location.href = "pages/login.html";
+
+// Fix footer links
+document.querySelectorAll(".footer-col a")[0].href = "pages/feed.html";
+document.querySelectorAll(".footer-col a")[4].href = "pages/saved.html";
+document.querySelectorAll(".footer-col a")[5].href = "pages/post.html";
+
+// Fix search button
+document.querySelector(".search-btn").onclick = () => window.location.href = "pages/feed.html";
+
+// Check if user already logged in
+const user = JSON.parse(localStorage.getItem("user"));
+if (user) {
+  document.querySelector(".btn-outline").textContent = "My Profile";
+  document.querySelector(".btn-outline").onclick = () => window.location.href = "pages/profile.html";
+  document.querySelector(".btn-primary").textContent = "Browse Jobs";
+  document.querySelector(".btn-primary").onclick = () => window.location.href = "pages/feed.html";
+}
+</script>
+
+</body>
+</html>
+
+
+
+
