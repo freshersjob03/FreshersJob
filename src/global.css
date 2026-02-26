@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: 186 55% 44%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 186 70% 34%;
+  --background: 210 20% 98%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --muted: 210 20% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 186 55% 94%;
+  --accent-foreground: 186 70% 34%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 186 55% 44%;
+  --radius: 0.75rem;
+}
+
+* {
+  font-family: 'Nunito', sans-serif;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, #3aafc4 0%, #1a7a94 100%);
+}
+
+.gradient-hero {
+  background: linear-gradient(135deg, #f0fafb 0%, #e0f4f7 50%, #d0eef2 100%);
+}
+
+.card-hover {
+  @apply transition-all duration-300 ease-out;
+}
+
+.card-hover:hover {
+  @apply shadow-lg -translate-y-1;
+}
+
+.btn-primary {
+  @apply bg-[#3aafc4] hover:bg-[#1a7a94] text-white transition-all duration-200;
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent;
+  background: linear-gradient(135deg, #3aafc4 0%, #1a7a94 100%);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}

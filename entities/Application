@@ -1,0 +1,49 @@
+{
+  "type": "object",
+  "properties": {
+    "job_id": {
+      "type": "string"
+    },
+    "candidate_email": {
+      "type": "string"
+    },
+    "candidate_name": {
+      "type": "string"
+    },
+    "resume_url": {
+      "type": "string"
+    },
+    "cover_letter": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "reviewed",
+        "shortlisted",
+        "rejected",
+        "hired"
+      ]
+    },
+    "employer_id": {
+      "type": "string"
+    },
+    "job_title": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "job_id",
+    "candidate_email",
+    "candidate_name",
+    "status",
+    "employer_id",
+    "job_title",
+    "company_name"
+  ],
+  "name": "Application"
+}
