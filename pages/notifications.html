@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FreshersJob – Notifications</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal: #3aafc4;
+      --teal-dark: #1a7a94;
+      --teal-light: #e8f7fa;
+      --slate: #4a6070;
+      --dark: #1c2b35;
+      --gray: #6b7f8c;
+      --light: #f5f8fa;
+      --white: #ffffff;
+      --star: #f5a623;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--light);
+      color: var(--dark);
+      overflow-x: hidden;
+    }
+
+    /* NAVBAR */
+    nav {
+      background: var(--white);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      position: sticky; top: 0; z-index: 100;
+      padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; gap: 16px;
+    }
+    .logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; }
+    .nav-search {
+      flex: 1; max-width: 400px; position: relative;
+      display: flex; align-items: center;
+    }
+    .nav-search svg { position: absolute; left: 12px; color: var(--gray); width: 16px; height: 16px; }
+    .nav-search input {
+      width: 100%; padding: 9px 16px 9px 36px;
+      border: 2px solid #dde4e8; border-radius: 25px;
+      font-family: 'Nunito', sans-serif; font-size: 0.88rem;
+      color: var(--dark); outline: none; background: var(--light);
+      transition: border-color 0.2s;
+    }
+    .nav-search input:focus { border-color: var(--teal); background: white; }
+    .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; }
+    .nav-links a {
+      text-decoration: none; color: var(--slate); font-weight: 700; font-size: 0.78rem;
+      padding: 6px 10px; border-radius: 8px;
+      transition: background 0.2s, color 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .nav-links a:hover, .nav-links a.active { background: var(--teal-light); color: var(--teal-dark); }
+    .nav-links svg { width: 20px; height: 20px; }
+    .nav-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 800; font-size: 0.85rem; cursor: pointer;
+    }
+
+    /* LAYOUT */
+    .notif-layout {
+      max-width: 800px;
+      margin: 24px auto;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Header */
+    .notif-header {
+      background: white; border-radius: 16px; padding: 16px 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .notif-header h2 { font-size: 1.1rem; font-weight: 900; color: var(--dark); }
+    .notif-header span { font-size: 0.82rem; color: var(--gray); }
+    .btn-mark-all {
+      background: none; border: none; cursor: pointer;
+      color: var(--teal-dark); font-family: 'Nunito', sans-serif;
+      font-weight: 700; font-size: 0.82rem;
+    }
+    .btn-mark-all:hover { text-decoration: underline; }
+
+    /* Filter Tabs */
+    .filter-tabs {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 8px 18px; border-radius: 20px;
+      border: 2px solid #dde4e8; background: white;
+      font-family: 'Nunito', sans-serif; font-weight: 700;
+      font-size: 0.82rem; color: var(--slate); cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { border-color: var(--teal); color: var(--teal-dark); }
+    .tab-btn.active {
+      background: var(--teal); color: white; border-color: var(--teal);
+    }
+
+    /* Notification Cards */
+    .notif-group { display: flex; flex-direction: column; gap: 2px; }
+    .notif-group-label {
+      font-size: 0.78rem; font-weight: 800; color: var(--gray);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 8px 4px;
+    }
+
+    .notif-card {
+      background: white; border-radius: 14px; padding: 16px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      display: flex; align-items: flex-start; gap: 14px;
+      transition: all 0.2s; cursor: pointer;
+      border-left: 4px solid transparent;
+      margin-bottom: 8px;
+    }
+    .notif-card:hover { transform: translateX(4px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .notif-card.unread { border-left-color: var(--teal); background: #f8fdfe; }
+
+    .notif-icon {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; flex-shrink: 0;
+    }
+    .notif-icon.job { background: var(--teal-light); }
+    .notif-icon.connect { background: #f0f9f0; }
+    .notif-icon.message { background: #f5f0ff; }
+    .notif-icon.alert { background: #fff8e8; }
+    .notif-icon.success { background: #f0f9f0; }
+    .notif-icon.reject { background: #fef0f0; }
+
+    .notif-body { flex: 1; }
+    .notif-text {
+      font-size: 0.88rem; color: var(--dark); line-height: 1.5; margin-bottom: 4px;
+    }
+    .notif-text strong { font-weight: 800; }
+    .notif-time { font-size: 0.72rem; color: var(--gray); font-weight: 600; }
+
+    .notif-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .btn-notif-primary {
+      padding: 6px 14px; background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      color: white; border: none; border-radius: 20px;
+      font-family: 'Nunito', sans-serif; font-weight: 700;
+      font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-notif-primary:hover { transform: translateY(-1px); }
+    .btn-notif-secondary {
+      padding: 6px 14px; background: transparent;
+      border: 2px solid #dde4e8; border-radius: 20px;
+      font-family: 'Nunito', sans-serif; font-weight: 700;
+      font-size: 0.75rem; color: var(--slate); cursor: pointer; transition: all 0.2s;
+    }
+    .btn-notif-secondary:hover { border-color: var(--teal); color: var(--teal-dark); }
+
+    .unread-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--teal); flex-shrink: 0; margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="../index.html" class="logo">
+    <img src="../images/logo.png" height="50" alt="FreshersJob Logo" style="margin-left: 50px;">
+  </a>
+  <div class="nav-search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Search jobs, companies, skills..." />
+  </div>
+  <ul class="nav-links">
+    <li><a href="../index.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</a></li>
+    <li><a href="feed.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.07-.44.18-.9.18-1.37C18 3.15 16.85 2 15 2H9C7.15 2 6 3.15 6 4.63c0 .47.11.93.18 1.37H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg>Jobs</a></li>
+    <li><a href="network.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Network</a></li>
+    <li><a href="messages.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>Messages</a></li>
+    <li><a href="notifications.html" class="active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>Alerts</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="avatar" onclick="window.location.href='profile.html'">YO</div>
+  </div>
+</nav>
+
+<!-- NOTIFICATIONS LAYOUT -->
+<div class="notif-layout">
+
+  <!-- Header -->
+  <div class="notif-header">
+    <div>
+      <h2>🔔 Notifications</h2>
+      <span>You have 5 unread notifications</span>
+    </div>
+    <button class="btn-mark-all" onclick="markAllRead()">✓ Mark all as read</button>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="filter-tabs">
+    <button class="tab-btn active" onclick="setTab(this)">All</button>
+    <button class="tab-btn" onclick="setTab(this)">💼 Jobs</button>
+    <button class="tab-btn" onclick="setTab(this)">🤝 Connections</button>
+    <button class="tab-btn" onclick="setTab(this)">💬 Messages</button>
+    <button class="tab-btn" onclick="setTab(this)">📋 Applications</button>
+  </div>
+
+  <!-- Today -->
+  <div class="notif-group">
+    <div class="notif-group-label">Today</div>
+
+    <div class="notif-card unread" onclick="markRead(this)">
+      <div class="notif-icon job">💼</div>
+      <div class="notif-body">
+        <div class="notif-text"><strong>TCS Recruiter</strong> viewed your profile and may be interested in your application for <strong>Junior Software Developer</strong>.</div>
+        <div class="notif-time">2 minutes ago</div>
+        <div class="notif-actions">
+          <button class="btn-notif-primary">View Profile</button>
+          <button class="btn-notif-secondary">Ignore</button>
+        </div>
+      </div>
+      <div class="unread-dot"></div>
+    </div>
+
+    <div class="notif-card unread" onclick="markRead(this)">
+      <div class="notif-icon connect">🤝</div>
+      <div class="notif-body">
+        <div class="notif-text"><strong>Rahul Kumar</strong> accepted your connection request! You are now connected.</div>
+        <div class="notif-time">1 hour ago</div>
+        <div class="notif-actions">
+          <button class="btn-notif-primary">Send Message</button>
+        </div>
+      </div>
+      <div class="unread-dot"></div>
+    </div>
+
+    <div class="notif-card unread" onclick="markRead(this)">
+      <div class="notif-icon alert">⭐</div>
+      <div class="notif-body">
+        <div class="notif-text">New job alert! <strong>Google India</strong> posted a new role matching your profile — <strong>Data Analyst Intern</strong> in Hyderabad.</div>
+        <div class="notif-time">3 hours ago</div>
+        <div class="notif-actions">
+          <button class="btn-notif-primary" onclick="window.location.href='job-detail.html'">View Job</button>
+          <button class="btn-notif-secondary">Dismiss</button>
+        </div>
+      </div>
+      <div class="unread-dot"></div>
+    </div>
+
+    <div class="notif-card unread" onclick="markRead(this)">
+      <div class="notif-icon message">💬</div>
+      <div class="notif-body">
+        <div class="notif-text"><strong>TCS Recruiter</strong> sent you a message: "We'd like to schedule an interview for the Junior Developer position..."</div>
+        <div class="notif-time">5 hours ago</div>
+        <div class="notif-actions">
+          <button class="btn-notif-primary" onclick="window.location.href='messages.html'">Reply</button>
+        </div>
+      </div>
+      <div class="unread-dot"></div>
+    </div>
+
+    <div class="notif-card unread" onclick="markRead(this)">
+      <div class="notif-icon success">✅</div>
+      <div class="notif-body">
+        <div class="notif-text">Your application for <strong>Cloud Support Associate</strong> at <strong>Amazon Web Services</strong> is under review. Good luck! 🤞</div>
+        <div class="notif-time">6 hours ago</div>
+      </div>
+      <div class="unread-dot"></div>
+    </div>
+
+  </div>
+
+  <!-- Yesterday -->
+  <div class="notif-group">
+    <div class="notif-group-label">Yesterday</div>
+
+    <div class="notif-card" onclick="markRead(this)">
+      <div class="notif-icon reject">❌</div>
+      <div class="notif-body">
+        <div class="notif-text">Your application for <strong>UI/UX Designer</strong> at <strong>Infosys BPM</strong> was not selected this time. Don't give up! 💪</div>
+        <div class="notif-time">Yesterday, 4:30 PM</div>
+        <div class="notif-actions">
+          <button class="btn-notif-primary">Find Similar Jobs</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="notif-card" onclick="markRead(this)">
+      <div class="notif-icon connect">🤝</div>
+      <div class="notif-body">
+        <div class="notif-text"><strong>Priya Sharma</strong> sent you a connection request. You have 3 mutual connections.</div>
+        <div class="notif-time">Yesterday, 2:15 PM</div>
+        <div class="notif-actions">
+          <button class="btn-notif-primary">Accept</button>
+          <button class="btn-notif-secondary">Decline</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="notif-card" onclick="markRead(this)">
+      <div class="notif-icon job">💼</div>
+      <div class="notif-body">
+        <div class="notif-text"><strong>50 new jobs</strong> match your profile this week! Check out the latest openings from TCS, Wipro, Infosys and more.</div>
+        <div class="notif-time">Yesterday, 9:00 AM</div>
+        <div class="notif-actions">
+          <button class="btn-notif-primary" onclick="window.location.href='feed.html'">Browse Jobs</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+<script>
+// Check if user is logged in
+function checkLogin() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user) {
+    window.location.href = "login.html";
+  }
+}
+
+function markRead(card) {
+  card.classList.remove("unread");
+  const dot = card.querySelector(".unread-dot");
+  if (dot) dot.remove();
+}
+function markAllRead() {
+  document.querySelectorAll(".notif-card.unread").forEach(card => {
+    card.classList.remove("unread");
+    const dot = card.querySelector(".unread-dot");
+    if (dot) dot.remove();
+  });
+  document.querySelector(".notif-header span").textContent = "All caught up! ✅";
+}
+
+function setTab(btn) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+checkLogin();
+</script>
+</body>
+</html>

@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FreshersJob – Jobs Feed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal: #3aafc4;
+      --teal-dark: #1a7a94;
+      --teal-light: #e8f7fa;
+      --slate: #4a6070;
+      --dark: #1c2b35;
+      --gray: #6b7f8c;
+      --light: #f5f8fa;
+      --white: #ffffff;
+      --star: #f5a623;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--light);
+      color: var(--dark);
+      overflow-x: hidden;
+    }
+
+    /* NAVBAR */
+    nav {
+      background: var(--white);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      position: sticky; top: 0; z-index: 100;
+      padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; gap: 16px;
+    }
+    .logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; }
+
+    /* Search in navbar */
+    .nav-search {
+      flex: 1;
+      max-width: 400px;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .nav-search svg {
+      position: absolute;
+      left: 12px;
+      color: var(--gray);
+      width: 16px; height: 16px;
+    }
+    .nav-search input {
+      width: 100%;
+      padding: 9px 16px 9px 36px;
+      border: 2px solid #dde4e8;
+      border-radius: 25px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.88rem;
+      color: var(--dark);
+      outline: none;
+      transition: border-color 0.2s;
+      background: var(--light);
+    }
+    .nav-search input:focus { border-color: var(--teal); background: white; }
+    .nav-search input::placeholder { color: #aab5bc; }
+
+    .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; }
+    .nav-links a {
+      text-decoration: none; color: var(--slate); font-weight: 700; font-size: 0.78rem;
+      padding: 6px 10px; border-radius: 8px;
+      transition: background 0.2s, color 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .nav-links a:hover, .nav-links a.active { background: var(--teal-light); color: var(--teal-dark); }
+    .nav-links svg { width: 20px; height: 20px; }
+
+    .nav-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 800; font-size: 0.85rem; cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* LAYOUT */
+    .feed-layout {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 260px 1fr 280px;
+      gap: 20px;
+    }
+
+    /* SIDEBAR LEFT */
+    .sidebar-left { display: flex; flex-direction: column; gap: 16px; }
+
+    .profile-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .profile-banner {
+      height: 60px;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+    }
+    .profile-info {
+      padding: 0 16px 16px;
+      text-align: center;
+    }
+    .profile-avatar {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 900; font-size: 1.2rem;
+      margin: -30px auto 10px;
+      border: 3px solid white;
+    }
+    .profile-name { font-weight: 900; font-size: 0.95rem; color: var(--dark); margin-bottom: 2px; }
+    .profile-title { font-size: 0.78rem; color: var(--gray); margin-bottom: 12px; }
+    .profile-stats {
+      display: flex;
+      justify-content: space-around;
+      border-top: 1px solid #f0f2f4;
+      padding-top: 12px;
+    }
+    .pstat { text-align: center; }
+    .pstat-num { font-weight: 900; font-size: 0.95rem; color: var(--teal-dark); }
+    .pstat-label { font-size: 0.7rem; color: var(--gray); }
+
+    .sidebar-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .sidebar-card h4 {
+      font-size: 0.88rem; font-weight: 900; color: var(--dark);
+      margin-bottom: 14px; padding-bottom: 8px;
+      border-bottom: 2px solid var(--light);
+    }
+
+    /* Filters */
+    .filter-group { margin-bottom: 14px; }
+    .filter-group label {
+      display: block; font-size: 0.78rem; font-weight: 700;
+      color: var(--slate); margin-bottom: 6px;
+    }
+    .filter-group select, .filter-group input[type="range"] {
+      width: 100%; padding: 8px 10px;
+      border: 2px solid #dde4e8; border-radius: 8px;
+      font-family: 'Nunito', sans-serif; font-size: 0.82rem;
+      color: var(--dark); outline: none; background: var(--light);
+    }
+    .filter-group select:focus { border-color: var(--teal); }
+
+    .filter-check {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.82rem; color: var(--slate);
+      margin-bottom: 8px; cursor: pointer;
+    }
+    .filter-check input { accent-color: var(--teal); }
+
+    .btn-apply-filter {
+      width: 100%; padding: 10px;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      color: white; border: none; border-radius: 10px;
+      font-family: 'Nunito', sans-serif; font-weight: 700;
+      font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+      margin-top: 4px;
+    }
+    .btn-apply-filter:hover { transform: translateY(-1px); }
+
+    /* MAIN FEED */
+    .main-feed { display: flex; flex-direction: column; gap: 16px; }
+
+    /* Feed Header */
+    .feed-header {
+      background: white; border-radius: 16px; padding: 16px 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .feed-header h2 { font-size: 1rem; font-weight: 900; color: var(--dark); }
+    .feed-header span { font-size: 0.82rem; color: var(--gray); }
+    .sort-select {
+      border: 2px solid #dde4e8; border-radius: 8px; padding: 6px 10px;
+      font-family: 'Nunito', sans-serif; font-size: 0.82rem;
+      color: var(--slate); outline: none; cursor: pointer;
+    }
+
+    /* Job Card */
+    .job-card {
+      background: white; border-radius: 16px; padding: 20px;
+      border: 2px solid transparent; transition: all 0.25s;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .job-card:hover {
+      border-color: var(--teal);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+    .job-card-top {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; margin-bottom: 12px;
+    }
+    .job-card-left { display: flex; align-items: flex-start; gap: 12px; }
+    .company-logo {
+      width: 46px; height: 46px; border-radius: 12px;
+      background: var(--teal-light);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 0.9rem; color: var(--teal-dark); flex-shrink: 0;
+    }
+    .job-info { flex: 1; }
+    .job-title { font-size: 1rem; font-weight: 900; color: var(--dark); margin-bottom: 2px; }
+    .company-name { font-size: 0.82rem; color: var(--gray); font-weight: 600; }
+
+    .job-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .bookmark-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--gray); transition: color 0.2s; padding: 4px;
+    }
+    .bookmark-btn:hover { color: var(--teal); }
+    .feat-badge {
+      background: var(--star); color: white;
+      font-size: 0.68rem; font-weight: 800; padding: 3px 10px; border-radius: 12px;
+    }
+
+    .job-meta {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      margin-bottom: 12px; font-size: 0.8rem; color: var(--gray);
+    }
+    .job-meta span { display: flex; align-items: center; gap: 4px; font-weight: 600; }
+    .job-meta svg { width: 13px; height: 13px; }
+
+    .job-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .job-tag {
+      background: var(--teal-light); color: var(--teal-dark);
+      font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+    }
+    .job-tag.gray { background: #f0f2f4; color: var(--slate); }
+
+    .job-card-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      border-top: 1px solid #f0f2f4; padding-top: 12px;
+    }
+    .salary { font-weight: 900; color: var(--teal-dark); font-size: 0.95rem; }
+    .posted { font-size: 0.75rem; color: var(--gray); }
+
+    .btn-apply {
+      padding: 8px 20px;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      color: white; border: none; border-radius: 20px;
+      font-family: 'Nunito', sans-serif; font-weight: 700;
+      font-size: 0.82rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-apply:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(58,175,196,0.35); }
+
+    /* SIDEBAR RIGHT */
+    .sidebar-right { display: flex; flex-direction: column; gap: 16px; }
+
+    .company-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid #f0f2f4;
+    }
+    .company-item:last-child { border-bottom: none; }
+    .company-item-logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--teal-light);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 0.78rem; color: var(--teal-dark); flex-shrink: 0;
+    }
+    .company-item-name { font-weight: 800; font-size: 0.85rem; color: var(--dark); }
+    .company-item-jobs { font-size: 0.72rem; color: var(--gray); }
+    .btn-follow {
+      margin-left: auto; padding: 5px 12px;
+      border: 2px solid var(--teal); border-radius: 20px;
+      background: transparent; color: var(--teal-dark);
+      font-family: 'Nunito', sans-serif; font-weight: 700;
+      font-size: 0.75rem; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+    }
+    .btn-follow:hover { background: var(--teal); color: white; }
+
+    .tip-card {
+      background: linear-gradient(135deg, var(--teal-dark), var(--teal));
+      border-radius: 16px; padding: 20px; color: white;
+    }
+    .tip-card h4 { font-size: 0.95rem; font-weight: 900; margin-bottom: 8px; }
+    .tip-card p { font-size: 0.82rem; opacity: 0.88; line-height: 1.6; margin-bottom: 14px; }
+    .btn-tip {
+      background: white; color: var(--teal-dark);
+      border: none; border-radius: 20px; padding: 8px 18px;
+      font-family: 'Nunito', sans-serif; font-weight: 800;
+      font-size: 0.82rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-tip:hover { transform: translateY(-1px); }
+
+    @media (max-width: 900px) {
+      .feed-layout { grid-template-columns: 1fr; }
+      .sidebar-left, .sidebar-right { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="../index.html" class="logo">
+    <img src="../images/logo.png" height="50" alt="FreshersJob Logo" style="margin-left:50px ;">
+  </a>
+
+  <div class="nav-search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Search jobs, companies, skills..." />
+  </div>
+
+  <ul class="nav-links">
+    <li><a href="../index.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</a></li>
+    <li><a href="feed.html" class="active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.07-.44.18-.9.18-1.37C18 3.15 16.85 2 15 2H9C7.15 2 6 3.15 6 4.63c0 .47.11.93.18 1.37H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg>Jobs</a></li>
+    <li><a href="network.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Network</a></li>
+    <li><a href="messages.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>Messages</a></li>
+    <li><a href="notifications.html"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>Alerts</a></li>
+  </ul>
+<div class="nav-right" style="position:relative;">
+  <div class="avatar" onclick="toggleMenu()" style="cursor:pointer;">YO</div>
+  <div id="dropMenu" style="display:none;position:absolute;top:48px;right:0;background:white;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:8px;min-width:160px;z-index:999;">
+    <a href="profile.html" style="display:block;padding:10px 14px;font-weight:700;font-size:0.85rem;color:#1c2b35;text-decoration:none;border-radius:8px;" onmouseover="this.style.background='#e8f7fa'" onmouseout="this.style.background='none'">👤 Profile</a>
+    <a href="saved.html" style="display:block;padding:10px 14px;font-weight:700;font-size:0.85rem;color:#1c2b35;text-decoration:none;border-radius:8px;" onmouseover="this.style.background='#e8f7fa'" onmouseout="this.style.background='none'">🔖 Saved Jobs</a>
+    <a href="login.html" style="display:block;padding:10px 14px;font-weight:700;font-size:0.85rem;color:#e53935;text-decoration:none;border-radius:8px;" onmouseover="this.style.background='#fef0f0'" onmouseout="this.style.background='none'">🚪 Logout</a>
+  </div>
+</div>
+</nav>
+
+<!-- FEED LAYOUT -->
+<div class="feed-layout">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar-left">
+
+    <!-- Profile Card -->
+    <div class="profile-card">
+      <div class="profile-banner"></div>
+      <div class="profile-info">
+        <div class="profile-avatar">YO</div>
+        <div class="profile-name">Your Name</div>
+        <div class="profile-title">Fresher · Looking for opportunities</div>
+        <div class="profile-stats">
+          <div class="pstat"><div class="pstat-num">12</div><div class="pstat-label">Applied</div></div>
+          <div class="pstat"><div class="pstat-num">5</div><div class="pstat-label">Saved</div></div>
+          <div class="pstat"><div class="pstat-num">2</div><div class="pstat-label">Interviews</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="sidebar-card">
+      <h4>🔍 Filter Jobs</h4>
+
+      <div class="filter-group">
+        <label>Job Type</label>
+        <div class="filter-check"><input type="checkbox" checked /> Full-time</div>
+        <div class="filter-check"><input type="checkbox" /> Part-time</div>
+        <div class="filter-check"><input type="checkbox" checked /> Internship</div>
+        <div class="filter-check"><input type="checkbox" /> Remote</div>
+      </div>
+
+      <div class="filter-group">
+        <label>Location</label>
+        <select>
+          <option>All Locations</option>
+          <option>Bangalore</option>
+          <option>Mumbai</option>
+          <option>Delhi</option>
+          <option>Hyderabad</option>
+          <option>Chennai</option>
+          <option>Pune</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Experience</label>
+        <select>
+          <option>Fresher (0-1 year)</option>
+          <option>1-2 years</option>
+          <option>2-3 years</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Category</label>
+        <select>
+          <option>All Categories</option>
+          <option>Software & IT</option>
+          <option>Marketing</option>
+          <option>Finance</option>
+          <option>Design</option>
+          <option>HR & Admin</option>
+        </select>
+      </div>
+
+      <button class="btn-apply-filter">Apply Filters</button>
+    </div>
+
+  </div>
+
+  <!-- MAIN FEED -->
+  <div class="main-feed">
+
+    <div class="feed-header">
+      <div>
+        <h2>Jobs For You 🎯</h2>
+        <span>Showing 50,000+ fresher jobs</span>
+      </div>
+      <select class="sort-select">
+        <option>Most Relevant</option>
+        <option>Newest First</option>
+        <option>Highest Salary</option>
+      </select>
+    </div>
+
+    <!-- Job Card 1 -->
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-left">
+          <div class="company-logo">TCS</div>
+          <div class="job-info">
+            <div class="job-title">Junior Software Developer</div>
+            <div class="company-name">Tata Consultancy Services</div>
+          </div>
+        </div>
+        <div class="job-card-right">
+          <button class="bookmark-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
+          <span class="feat-badge">⭐ Featured</span>
+        </div>
+      </div>
+      <div class="job-meta">
+        <span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Bangalore</span>
+        <span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.07-.44.18-.9.18-1.37C18 3.15 16.85 2 15 2H9C7.15 2 6 3.15 6 4.63c0 .47.11.93.18 1.37H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg>Full-time</span>
+        <span>🎓 Fresher</span>
+        <span>⏰ 2 days ago</span>
+      </div>
+      <div class="job-tags">
+        <span class="job-tag">React</span>
+        <span class="job-tag">Node.js</span>
+        <span class="job-tag">JavaScript</span>
+        <span class="job-tag gray">B.Tech / BE</span>
+      </div>
+      <div class="job-card-footer">
+        <span class="salary">₹4–6 LPA</span>
+        <button class="btn-apply" onclick="window.location.href='job-detail.html'">Apply Now →</button>
+      </div>
+    </div>
+
+    <!-- Job Card 2 -->
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-left">
+          <div class="company-logo" style="background:#e8f4fd;color:#1a73e8">G</div>
+          <div class="job-info">
+            <div class="job-title">Data Analyst Intern</div>
+            <div class="company-name">Google India</div>
+          </div>
+        </div>
+        <div class="job-card-right">
+          <button class="bookmark-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
+        </div>
+      </div>
+      <div class="job-meta">
+        <span>📍 Hyderabad</span>
+        <span>💼 Internship</span>
+        <span>🎓 Fresher</span>
+        <span>⏰ 1 day ago</span>
+      </div>
+      <div class="job-tags">
+        <span class="job-tag">Python</span>
+        <span class="job-tag">SQL</span>
+        <span class="job-tag">Excel</span>
+        <span class="job-tag gray">Any Degree</span>
+      </div>
+      <div class="job-card-footer">
+        <span class="salary">₹35,000/mo</span>
+        <button class="btn-apply" onclick="window.location.href='job-detail.html'">Apply Now →</button>
+      </div>
+    </div>
+
+    <!-- Job Card 3 -->
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-left">
+          <div class="company-logo" style="background:#fff0e8;color:#f77737">IN</div>
+          <div class="job-info">
+            <div class="job-title">UI/UX Designer</div>
+            <div class="company-name">Infosys BPM</div>
+          </div>
+        </div>
+        <div class="job-card-right">
+          <button class="bookmark-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
+          <span class="feat-badge">⭐ Featured</span>
+        </div>
+      </div>
+      <div class="job-meta">
+        <span>📍 Pune</span>
+        <span>💼 Full-time</span>
+        <span>🎓 Fresher</span>
+        <span>⏰ 3 days ago</span>
+      </div>
+      <div class="job-tags">
+        <span class="job-tag">Figma</span>
+        <span class="job-tag">Adobe XD</span>
+        <span class="job-tag">Prototyping</span>
+        <span class="job-tag gray">B.Des / Any</span>
+      </div>
+      <div class="job-card-footer">
+        <span class="salary">₹3.5–5 LPA</span>
+        <button class="btn-apply" onclick="window.location.href='job-detail.html'">Apply Now →</button>
+      </div>
+    </div>
+
+    <!-- Job Card 4 -->
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-left">
+          <div class="company-logo" style="background:#f0f9f0;color:#2d8a4e">WI</div>
+          <div class="job-info">
+            <div class="job-title">Digital Marketing Executive</div>
+            <div class="company-name">Wipro Technologies</div>
+          </div>
+        </div>
+        <div class="job-card-right">
+          <button class="bookmark-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
+        </div>
+      </div>
+      <div class="job-meta">
+        <span>📍 Delhi</span>
+        <span>💼 Full-time</span>
+        <span>🎓 Fresher</span>
+        <span>⏰ Today</span>
+      </div>
+      <div class="job-tags">
+        <span class="job-tag">SEO</span>
+        <span class="job-tag">Google Ads</span>
+        <span class="job-tag">Social Media</span>
+        <span class="job-tag gray">Any Degree</span>
+      </div>
+      <div class="job-card-footer">
+        <span class="salary">₹3–4.5 LPA</span>
+        <button class="btn-apply" onclick="window.location.href='job-detail.html'">Apply Now →</button>
+      </div>
+    </div>
+
+    <!-- Job Card 5 -->
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-left">
+          <div class="company-logo" style="background:#fef0f0;color:#e53935">AZ</div>
+          <div class="job-info">
+            <div class="job-title">Cloud Support Associate</div>
+            <div class="company-name">Amazon Web Services</div>
+          </div>
+        </div>
+        <div class="job-card-right">
+          <button class="bookmark-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
+        </div>
+      </div>
+      <div class="job-meta">
+        <span>📍 Mumbai</span>
+        <span>💼 Full-time</span>
+        <span>🎓 Fresher</span>
+        <span>⏰ 5 hrs ago</span>
+      </div>
+      <div class="job-tags">
+        <span class="job-tag">AWS</span>
+        <span class="job-tag">Linux</span>
+        <span class="job-tag">Networking</span>
+        <span class="job-tag gray">B.Tech / BE</span>
+      </div>
+      <div class="job-card-footer">
+        <span class="salary">₹5–7 LPA</span>
+        <button class="btn-apply" onclick="window.location.href='job-detail.html'">Apply Now →</button>
+      </div>
+    </div>
+
+    <!-- Job Card 6 -->
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="job-card-left">
+          <div class="company-logo" style="background:#f5f0ff;color:#7c3aed">ZO</div>
+          <div class="job-info">
+            <div class="job-title">HR Executive (Fresher)</div>
+            <div class="company-name">Zoho Corporation</div>
+          </div>
+        </div>
+        <div class="job-card-right">
+          <button class="bookmark-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button>
+        </div>
+      </div>
+      <div class="job-meta">
+        <span>📍 Chennai</span>
+        <span>💼 Full-time</span>
+        <span>🎓 Fresher</span>
+        <span>⏰ Yesterday</span>
+      </div>
+      <div class="job-tags">
+        <span class="job-tag">Recruitment</span>
+        <span class="job-tag">HR</span>
+        <span class="job-tag">Communication</span>
+        <span class="job-tag gray">Any Degree</span>
+      </div>
+      <div class="job-card-footer">
+        <span class="salary">₹3–4 LPA</span>
+        <button class="btn-apply" onclick="window.location.href='job-detail.html'">Apply Now →</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="sidebar-right">
+
+    <!-- Career Tip -->
+    <div class="tip-card">
+      <h4>💡 Career Tip</h4>
+      <p>Complete your profile to get 3x more interview calls from recruiters!</p>
+      <button class="btn-tip" onclick="window.location.href='profile.html'">Complete Profile →</button>
+    </div>
+
+    <!-- Top Companies -->
+    <div class="sidebar-card">
+      <h4>🏢 Top Hiring Companies</h4>
+      <div class="company-item">
+        <div class="company-item-logo">TCS</div>
+        <div><div class="company-item-name">TCS</div><div class="company-item-jobs">1,240 jobs</div></div>
+        <button class="btn-follow">Follow</button>
+      </div>
+      <div class="company-item">
+        <div class="company-item-logo" style="background:#e8f4fd;color:#1a73e8">G</div>
+        <div><div class="company-item-name">Google India</div><div class="company-item-jobs">342 jobs</div></div>
+        <button class="btn-follow">Follow</button>
+      </div>
+      <div class="company-item">
+        <div class="company-item-logo" style="background:#fff0e8;color:#f77737">IN</div>
+        <div><div class="company-item-name">Infosys</div><div class="company-item-jobs">890 jobs</div></div>
+        <button class="btn-follow">Follow</button>
+      </div>
+      <div class="company-item">
+        <div class="company-item-logo" style="background:#f0f9f0;color:#2d8a4e">WI</div>
+        <div><div class="company-item-name">Wipro</div><div class="company-item-jobs">670 jobs</div></div>
+        <button class="btn-follow">Follow</button>
+      </div>
+      <div class="company-item">
+        <div class="company-item-logo" style="background:#fef0f0;color:#e53935">AZ</div>
+        <div><div class="company-item-name">Amazon</div><div class="company-item-jobs">520 jobs</div></div>
+        <button class="btn-follow">Follow</button>
+      </div>
+    </div>
+
+    <!-- Popular Skills -->
+    <div class="sidebar-card">
+      <h4>🔥 Trending Skills</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span style="background:var(--teal-light);color:var(--teal-dark);padding:5px 12px;border-radius:20px;font-size:0.78rem;font-weight:700;cursor:pointer;">React.js</span>
+        <span style="background:var(--teal-light);color:var(--teal-dark);padding:5px 12px;border-radius:20px;font-size:0.78rem;font-weight:700;cursor:pointer;">Python</span>
+        <span style="background:var(--teal-light);color:var(--teal-dark);padding:5px 12px;border-radius:20px;font-size:0.78rem;font-weight:700;cursor:pointer;">SQL</span>
+        <span style="background:var(--teal-light);color:var(--teal-dark);padding:5px 12px;border-radius:20px;font-size:0.78rem;font-weight:700;cursor:pointer;">Figma</span>
+        <span style="background:var(--teal-light);color:var(--teal-dark);padding:5px 12px;border-radius:20px;font-size:0.78rem;font-weight:700;cursor:pointer;">Node.js</span>
+        <span style="background:var(--teal-light);color:var(--teal-dark);padding:5px 12px;border-radius:20px;font-size:0.78rem;font-weight:700;cursor:pointer;">AWS</span>
+        <span style="background:var(--teal-light);color:var(--teal-dark);padding:5px 12px;border-radius:20px;font-size:0.78rem;font-weight:700;cursor:pointer;">Excel</span>
+        <span style="background:var(--teal-light);color:var(--teal-dark);padding:5px 12px;border-radius:20px;font-size:0.78rem;font-weight:700;cursor:pointer;">SEO</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+<script>
+  async function saveJob(jobId) {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user) {
+    alert("Please login first!");
+    window.location.href = "login.html";
+    return;
+  }
+  try {
+    const res = await fetch("http://localhost:5000/api/jobs/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: jobId, user_id: user.id })
+    });
+    const data = await res.json();
+    alert(data.message);
+  } catch (err) {
+    alert("Failed to save job!");
+  }
+}
+// Load real jobs from backend
+async function loadJobs() {
+  try {
+    const res = await fetch("http://localhost:5000/api/jobs");
+    const jobs = await res.json();
+
+    const feed = document.querySelector(".main-feed");
+    document.querySelectorAll(".job-card").forEach(card => card.remove());
+
+    jobs.forEach(job => {
+      const initials = job.company.substring(0, 2).toUpperCase();
+      const card = document.createElement("div");
+      card.className = "job-card";
+      card.innerHTML = `
+        <div class="job-card-top">
+          <div class="job-card-left">
+            <div class="company-logo">${initials}</div>
+            <div class="job-info">
+              <div class="job-title">${job.title}</div>
+              <div class="company-name">${job.company}</div>
+            </div>
+          </div>
+          <div class="job-card-right">
+           <button class="bookmark-btn" onclick="saveJob(${job.id})">🔖</button>
+          </div>
+        </div>
+        <div class="job-meta">
+          <span>📍 ${job.location}</span>
+          <span>💼 ${job.job_type}</span>
+          <span>🎓 Fresher</span>
+        </div>
+        <div class="job-tags">
+          ${job.skills ? job.skills.map(s => `<span class="job-tag">${s}</span>`).join("") : ""}
+        </div>
+        <div class="job-card-footer">
+          <span class="salary">₹${job.salary_min/100000}–${job.salary_max/100000} LPA</span>
+          <button class="btn-apply" onclick="window.location.href='/pages/job-details.html?id=${job.id}'">Apply Now →</button>
+        </div>
+      `;
+      feed.appendChild(card);
+    });
+  } catch (err) {
+    console.error("Failed to load jobs!", err);
+  }
+}
+
+// Apply for a job
+async function applyJob(jobId) {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user) {
+    alert("Please login first!");
+    window.location.href = "login.html";
+    return;
+  }
+  try {
+    const res = await fetch("http://localhost:5000/api/applications", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: jobId, candidate_id: user.id })
+    });
+    const data = await res.json();
+    alert(data.message);
+  } catch (err) {
+    alert("Failed to apply!");
+  }
+}
+
+// Avatar dropdown menu
+function toggleMenu() {
+  const menu = document.getElementById("dropMenu");
+  menu.style.display = menu.style.display === "none" ? "block" : "none";
+}
+
+document.addEventListener("click", function(e) {
+  if (!e.target.closest(".nav-right")) {
+    const menu = document.getElementById("dropMenu");
+    if (menu) menu.style.display = "none";
+  }
+});
+
+loadJobs();
+</script>
+</body>
+</html>
