@@ -50,7 +50,7 @@ export default function Profile() {
   const [uploadingResume, setUploadingResume] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState('');
-  const [showDeletePanel, setShowDeletePanel] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [newSkill, setNewSkill] = useState('');
   const { toast } = useToast();
   const { clerk } = useAuth();
@@ -438,58 +438,13 @@ export default function Profile() {
           )}
 
           <Card className="p-6 border border-red-200 bg-red-50/40 shadow-sm mb-2">
-            {!showDeletePanel ? (
-              <Button
-                type="button"
-                onClick={() => setShowDeletePanel(true)}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                Delete My Account Permanently
-              </Button>
-            ) : (
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
-                <div className="flex-1">
-                  <h2 className="text-lg font-bold text-red-700">Delete My Account Permanently</h2>
-                  <p className="text-sm text-red-700/90 mt-1">
-                    This will permanently delete your profile, jobs, applications, saved jobs, and account access.
-                  </p>
-                  <div className="mt-4">
-                    <Label className="text-red-700">
-                      Type your profile name to confirm: <span className="font-semibold">{profileName}</span>
-                    </Label>
-                    <Input
-                      value={deleteConfirmName}
-                      onChange={(e) => setDeleteConfirmName(e.target.value)}
-                      placeholder="Enter your profile name exactly"
-                      className="mt-2 bg-white border-red-200 focus-visible:ring-red-300"
-                    />
-                  </div>
-                  <div className="mt-4 flex gap-3">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="border-red-200 text-red-700 hover:bg-red-100"
-                      onClick={() => {
-                        setShowDeletePanel(false);
-                        setDeleteConfirmName('');
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={handleDeleteAccount}
-                      disabled={!canDeleteAccount || deletingAccount}
-                      className="bg-red-600 hover:bg-red-700 text-white"
-                    >
-                      {deletingAccount ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                      Delete My Account Permanently
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
+            <Button
+              type="button"
+              onClick={() => setDeleteDialogOpen(true)}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete My Account Permanently
+            </Button>
           </Card>
         </motion.div>
       </div>
@@ -693,6 +648,62 @@ export default function Profile() {
               </Button>
               <Button className="flex-1 btn-primary" onClick={handleSave} disabled={saving}>
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Changes'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open && !deletingAccount) {
+            setDeleteConfirmName('');
+          }
+        }}
+      >
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="text-red-700 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5" />
+              Delete My Account Permanently
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-1">
+            <p className="text-sm text-red-700/90">
+              This will permanently delete your profile, jobs, applications, saved jobs, and account access.
+            </p>
+            <div>
+              <Label className="text-red-700">
+                Type your profile name to confirm: <span className="font-semibold">{profileName}</span>
+              </Label>
+              <Input
+                value={deleteConfirmName}
+                onChange={(e) => setDeleteConfirmName(e.target.value)}
+                placeholder="Enter your profile name exactly"
+                className="mt-2 bg-white border-red-200 focus-visible:ring-red-300"
+              />
+            </div>
+            <div className="flex gap-3 justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                className="border-red-200 text-red-700 hover:bg-red-100"
+                onClick={() => setDeleteDialogOpen(false)}
+                disabled={deletingAccount}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={!canDeleteAccount || deletingAccount}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                {deletingAccount ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                Delete My Account Permanently
               </Button>
             </div>
           </div>
