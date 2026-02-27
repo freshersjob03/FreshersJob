@@ -57,8 +57,11 @@ export default function Onboarding() {
       const profiles = await api.entities.UserProfile.filter({ created_by: userData.email });
       if (profiles.length > 0) {
         localStorage.removeItem('freshersjob_pending_role');
-        // Profile exists, redirect to feed
-        window.location.href = createPageUrl('Feed');
+        // Profile exists, redirect by role
+        const existingRole = profiles[0]?.role;
+        window.location.href = existingRole === 'employer'
+          ? createPageUrl('PostJob')
+          : createPageUrl('Feed');
       }
     } catch (error) {
       // Not logged in
@@ -91,7 +94,9 @@ export default function Onboarding() {
 
       await api.entities.UserProfile.create(profileData);
       localStorage.removeItem('freshersjob_pending_role');
-      window.location.href = createPageUrl('Feed');
+      window.location.href = role === 'employer'
+        ? createPageUrl('PostJob')
+        : createPageUrl('Feed');
     } catch (error) {
       console.error('Error creating profile:', error);
       setLoading(false);
