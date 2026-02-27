@@ -63,10 +63,47 @@ export const api = {
     //
     // On the server side you can grab a Clerk or Supabase session using the
     // appropriate SDK and expose helper endpoints instead.
-    me: async () => ({ email: 'demo@local', name: 'Demo User' }),
-    isAuthenticated: async () => true,
-    redirectToLogin: (url) => { console.log('redirect to', url); },
-    logout: () => { console.log('logout'); }
+    me: async () => {
+      const clerk = window?.Clerk;
+      const user = clerk?.user;
+      if (!user) {
+        throw new Error('Not authenticated');
+      }
+
+      const primaryEmail =
+        user?.primaryEmailAddress?.emailAddress ||
+        user?.emailAddresses?.[0]?.emailAddress ||
+        null;
+
+      const fullName =
+        [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
+        user?.username ||
+        primaryEmail ||
+        'User';
+
+      return {
+        id: user.id,
+        email: primaryEmail,
+        full_name: fullName,
+        name: fullName,
+      };
+    },
+    isAuthenticated: async () => {
+      const clerk = window?.Clerk;
+      return !!clerk?.user;
+    },
+    redirectToLogin: (url) => {
+      const clerk = window?.Clerk;
+      if (clerk?.openSignIn) {
+        clerk.openSignIn({ redirectUrl: url });
+      }
+    },
+    logout: async () => {
+      const clerk = window?.Clerk;
+      if (clerk?.signOut) {
+        await clerk.signOut();
+      }
+    }
   },
   entities: {
     UserProfile: {
