@@ -199,16 +199,19 @@ export default function Profile() {
 
     setDeletingAccount(true);
     try {
-      const [savedJobs, candidateApplications, employerApplications, jobs, profiles] = await Promise.all([
+      const [savedJobs, candidateApplications, jobs, profiles] = await Promise.all([
         api.entities.SavedJob.filter({ user_email: user.email }),
         api.entities.Application.filter({ candidate_email: user.email }),
-        api.entities.Application.filter({ employer_id: user.email }),
         api.entities.Job.filter({ employer_id: user.email }),
         api.entities.UserProfile.filter({ created_by: user.email }),
       ]);
 
+      const employerApplicationsList = await Promise.all(
+        jobs.map((job) => api.entities.Application.filter({ job_id: job.id }))
+      );
+
       const appMap = new Map();
-      [...candidateApplications, ...employerApplications].forEach((app) => {
+      [...candidateApplications, ...employerApplicationsList.flat()].forEach((app) => {
         if (app?.id != null) appMap.set(app.id, app);
       });
 
