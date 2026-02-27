@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPageUrl } from '@/utils';
 import { api } from '@/api/apiClient';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -32,6 +33,7 @@ export default function PostJob() {
   const [posting, setPosting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [newSkill, setNewSkill] = useState('');
+  const { toast } = useToast();
   
   const [jobData, setJobData] = useState({
     title: '',
@@ -116,20 +118,38 @@ export default function PostJob() {
     setPosting(true);
 
     try {
-      await api.entities.Job.create({
-        ...jobData,
+      const payload = {
+        title: jobData.title,
+        company: jobData.company_name,
+        location: jobData.location,
+        job_type: jobData.job_type,
         salary_min: jobData.salary_min ? parseFloat(jobData.salary_min) : null,
         salary_max: jobData.salary_max ? parseFloat(jobData.salary_max) : null,
+        description: jobData.description,
+        requirements: jobData.requirements,
+        skills: jobData.skills,
         employer_id: user.email,
-        applications_count: 0
+      };
+
+      await api.entities.Job.create({
+        ...payload
       });
 
       setSuccess(true);
+      toast({
+        title: 'Job posted',
+        description: 'Your job is now live.',
+      });
       setTimeout(() => {
         window.location.href = createPageUrl('ManageJobs');
       }, 2000);
     } catch (error) {
       console.error('Error posting job:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Post Job failed',
+        description: error?.message || 'Could not create job.',
+      });
       setPosting(false);
     }
   };
