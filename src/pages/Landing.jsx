@@ -119,7 +119,7 @@ export default function Landing() {
   };
 
   const getRedirectUrl = () =>
-    accountType === 'employer' ? createPageUrl('PostJob') : createPageUrl('Feed');
+    accountType === 'employer' ? createPageUrl('Onboarding') : createPageUrl('Feed');
 
   const openLoginFlow = () => {
     localStorage.setItem('freshersjob_pending_role', accountType);

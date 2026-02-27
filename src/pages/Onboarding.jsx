@@ -23,12 +23,14 @@ export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [role, setRole] = useState('candidate');
   const [roleLocked, setRoleLocked] = useState(false);
+  const [existingProfileId, setExistingProfileId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     headline: '',
     bio: '',
     location: '',
+    phone: '',
     skills: '',
     education: '',
     experience_years: 0,
@@ -56,9 +58,34 @@ export default function Onboarding() {
       // Check if profile already exists
       const profiles = await api.entities.UserProfile.filter({ created_by: userData.email });
       if (profiles.length > 0) {
+        const existingProfile = profiles[0];
+        const existingRole = existingProfile?.role;
+        const isEmployerIncomplete =
+          existingRole === 'employer' &&
+          (!existingProfile?.company_name || !existingProfile?.headline || !existingProfile?.phone);
+
+        if (isEmployerIncomplete) {
+          setExistingProfileId(existingProfile.id);
+          setRole('employer');
+          setRoleLocked(true);
+          setStep(2);
+          setFormData((prev) => ({
+            ...prev,
+            headline: existingProfile.headline || '',
+            bio: existingProfile.bio || '',
+            location: existingProfile.location || '',
+            phone: existingProfile.phone || '',
+            skills: Array.isArray(existingProfile.skills) ? existingProfile.skills.join(', ') : '',
+            education: existingProfile.education || '',
+            experience_years: existingProfile.experience_years || 0,
+            company_name: existingProfile.company_name || '',
+            company_website: existingProfile.company_website || '',
+            company_size: existingProfile.company_size || '',
+          }));
+          return;
+        }
+
         localStorage.removeItem('freshersjob_pending_role');
-        // Profile exists, redirect by role
-        const existingRole = profiles[0]?.role;
         window.location.href = existingRole === 'employer'
           ? createPageUrl('PostJob')
           : createPageUrl('Feed');
@@ -81,24 +108,33 @@ export default function Onboarding() {
         headline: formData.headline,
         bio: formData.bio,
         location: formData.location,
+        phone: formData.phone,
         skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean),
         education: formData.education,
         experience_years: formData.experience_years
       };
 
       if (role === 'employer') {
+        if (!formData.company_name || !formData.headline || !formData.phone) {
+          throw new Error('Please fill company name, role/designation, and phone number.');
+        }
         profileData.company_name = formData.company_name;
         profileData.company_website = formData.company_website;
         profileData.company_size = formData.company_size;
       }
 
-      await api.entities.UserProfile.create(profileData);
+      if (existingProfileId) {
+        await api.entities.UserProfile.update(existingProfileId, profileData);
+      } else {
+        await api.entities.UserProfile.create(profileData);
+      }
       localStorage.removeItem('freshersjob_pending_role');
       window.location.href = role === 'employer'
         ? createPageUrl('PostJob')
         : createPageUrl('Feed');
     } catch (error) {
       console.error('Error creating profile:', error);
+      window.alert(error?.message || 'Unable to save profile.');
       setLoading(false);
     }
   };
@@ -184,6 +220,25 @@ export default function Onboarding() {
             className="pl-10 h-12 border-gray-200"
           />
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-700 font-medium">Your Name</Label>
+        <Input
+          value={user?.full_name || user?.name || ''}
+          readOnly
+          className="h-12 border-gray-200 bg-gray-50"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-700 font-medium">Phone Number</Label>
+        <Input
+          placeholder="e.g., +91 98765 43210"
+          value={formData.phone}
+          onChange={(e) => setFormData({...formData, phone: e.target.value})}
+          className="h-12 border-gray-200"
+        />
       </div>
 
       <div className="space-y-2">
