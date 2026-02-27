@@ -104,72 +104,92 @@ export const api = {
     },
     Job: {
       filter: async (filterObj = {}, order) => {
-        let query = supabase.from('Job').select('*');
-        if (Object.keys(filterObj).length) {
-          query = query.match(filterObj);
-        }
-        query = applyOrder(query, order);
-        const { data, error } = await query;
-        if (error) throw error;
-        return data || [];
+        return withTableFallback(['jobs', 'job', 'Job'], async (tableName) => {
+          let query = supabase.from(tableName).select('*');
+          if (Object.keys(filterObj).length) {
+            query = query.match(filterObj);
+          }
+          query = applyOrder(query, order);
+          const { data, error } = await query;
+          if (error) throw error;
+          return data || [];
+        });
       },
       list: async (order, limit) => {
-        let query = supabase.from('Job').select('*');
-        query = applyOrder(query, order);
-        if (limit) query = query.limit(limit);
-        const { data, error } = await query;
-        if (error) throw error;
-        return data || [];
+        return withTableFallback(['jobs', 'job', 'Job'], async (tableName) => {
+          let query = supabase.from(tableName).select('*');
+          query = applyOrder(query, order);
+          if (limit) query = query.limit(limit);
+          const { data, error } = await query;
+          if (error) throw error;
+          return data || [];
+        });
       },
       create: async (obj) => {
-        const { data, error } = await supabase.from('Job').insert(obj).select().single();
-        if (error) throw error;
-        return data;
+        return withTableFallback(['jobs', 'job', 'Job'], async (tableName) => {
+          const { data, error } = await supabase.from(tableName).insert(obj).select().single();
+          if (error) throw error;
+          return data;
+        });
       },
       update: async (id, obj) => {
-        const { data, error } = await supabase.from('Job').update(obj).eq('id', id).select().single();
-        if (error) throw error;
-        return data;
+        return withTableFallback(['jobs', 'job', 'Job'], async (tableName) => {
+          const { data, error } = await supabase.from(tableName).update(obj).eq('id', id).select().single();
+          if (error) throw error;
+          return data;
+        });
       },
       delete: async (id) => {
-        const { error } = await supabase.from('Job').delete().eq('id', id);
-        if (error) throw error;
+        return withTableFallback(['jobs', 'job', 'Job'], async (tableName) => {
+          const { error } = await supabase.from(tableName).delete().eq('id', id);
+          if (error) throw error;
+        });
       }
     },
     Application: {
       filter: async (filterObj = {}, order) => {
-        let query = supabase.from('Application').select('*');
-        if (Object.keys(filterObj).length) {
-          query = query.match(filterObj);
-        }
-        query = applyOrder(query, order);
-        const { data, error } = await query;
-        if (error) throw error;
-        return data || [];
+        return withTableFallback(['applications', 'application', 'Application'], async (tableName) => {
+          let query = supabase.from(tableName).select('*');
+          if (Object.keys(filterObj).length) {
+            query = query.match(filterObj);
+          }
+          query = applyOrder(query, order);
+          const { data, error } = await query;
+          if (error) throw error;
+          return data || [];
+        });
       },
       update: async (id, obj) => {
-        const { data, error } = await supabase.from('Application').update(obj).eq('id', id).select().single();
-        if (error) throw error;
-        return data;
+        return withTableFallback(['applications', 'application', 'Application'], async (tableName) => {
+          const { data, error } = await supabase.from(tableName).update(obj).eq('id', id).select().single();
+          if (error) throw error;
+          return data;
+        });
       },
       delete: async (id) => {
-        const { error } = await supabase.from('Application').delete().eq('id', id);
-        if (error) throw error;
+        return withTableFallback(['applications', 'application', 'Application'], async (tableName) => {
+          const { error } = await supabase.from(tableName).delete().eq('id', id);
+          if (error) throw error;
+        });
       }
     },
     SavedJob: {
       filter: async (filterObj = {}) => {
-        let query = supabase.from('SavedJob').select('*');
-        if (Object.keys(filterObj).length) {
-          query = query.match(filterObj);
-        }
-        const { data, error } = await query;
-        if (error) throw error;
-        return data || [];
+        return withTableFallback(['saved_jobs', 'savedjob', 'SavedJob'], async (tableName) => {
+          let query = supabase.from(tableName).select('*');
+          if (Object.keys(filterObj).length) {
+            query = query.match(filterObj);
+          }
+          const { data, error } = await query;
+          if (error) throw error;
+          return data || [];
+        });
       },
       delete: async (id) => {
-        const { error } = await supabase.from('SavedJob').delete().eq('id', id);
-        if (error) throw error;
+        return withTableFallback(['saved_jobs', 'savedjob', 'SavedJob'], async (tableName) => {
+          const { error } = await supabase.from(tableName).delete().eq('id', id);
+          if (error) throw error;
+        });
       }
     }
   },
