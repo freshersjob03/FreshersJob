@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPageUrl } from '@/utils';
 import { api } from '@/api/apiClient';
+import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Card } from '@/components/ui/card';
@@ -32,7 +33,8 @@ import {
   Loader2,
   CheckCircle2,
   Plus,
-  X
+  X,
+  AlertTriangle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -46,8 +48,11 @@ export default function Profile() {
   const [editData, setEditData] = useState({});
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState('');
   const [newSkill, setNewSkill] = useState('');
   const { toast } = useToast();
+  const { clerk } = useAuth();
 
   useEffect(() => {
     loadData();
@@ -180,6 +185,61 @@ export default function Profile() {
   };
 
   const isEmployer = profile?.role === 'employer';
+  const profileName = (user?.full_name || user?.email || '').trim();
+  const canDeleteAccount = deleteConfirmName.trim() === profileName;
+
+  const handleDeleteAccount = async () => {
+    if (!canDeleteAccount || !user?.email || deletingAccount) return;
+
+    const shouldDelete = window.confirm(
+      `This will permanently delete your account and all data for ${profileName}. This cannot be undone. Continue?`
+    );
+    if (!shouldDelete) return;
+
+    setDeletingAccount(true);
+    try {
+      const [savedJobs, candidateApplications, employerApplications, jobs, profiles] = await Promise.all([
+        api.entities.SavedJob.filter({ user_email: user.email }),
+        api.entities.Application.filter({ candidate_email: user.email }),
+        api.entities.Application.filter({ employer_id: user.email }),
+        api.entities.Job.filter({ employer_id: user.email }),
+        api.entities.UserProfile.filter({ created_by: user.email }),
+      ]);
+
+      const appMap = new Map();
+      [...candidateApplications, ...employerApplications].forEach((app) => {
+        if (app?.id != null) appMap.set(app.id, app);
+      });
+
+      await Promise.all([
+        ...savedJobs.map((row) => api.entities.SavedJob.delete(row.id)),
+        ...Array.from(appMap.values()).map((row) => api.entities.Application.delete(row.id)),
+        ...jobs.map((row) => api.entities.Job.delete(row.id)),
+        ...profiles.map((row) => api.entities.UserProfile.delete(row.id)),
+      ]);
+
+      if (clerk?.user?.delete) {
+        await clerk.user.delete();
+      } else if (clerk?.signOut) {
+        await clerk.signOut();
+      }
+
+      localStorage.removeItem('freshersjob_pending_role');
+      toast({
+        title: 'Account deleted',
+        description: 'Your account has been deleted permanently.',
+      });
+      window.location.href = createPageUrl('Landing');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Delete failed',
+        description: error?.message || 'Unable to delete account right now.',
+      });
+      setDeletingAccount(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -375,6 +435,38 @@ export default function Profile() {
               </div>
             </Card>
           )}
+
+          <Card className="p-6 border border-red-200 bg-red-50/40 shadow-sm mb-2">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
+              <div className="flex-1">
+                <h2 className="text-lg font-bold text-red-700">Delete My Account Permanently</h2>
+                <p className="text-sm text-red-700/90 mt-1">
+                  This will permanently delete your profile, jobs, applications, saved jobs, and account access.
+                </p>
+                <div className="mt-4">
+                  <Label className="text-red-700">
+                    Type your profile name to confirm: <span className="font-semibold">{profileName}</span>
+                  </Label>
+                  <Input
+                    value={deleteConfirmName}
+                    onChange={(e) => setDeleteConfirmName(e.target.value)}
+                    placeholder="Enter your profile name exactly"
+                    className="mt-2 bg-white border-red-200 focus-visible:ring-red-300"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  onClick={handleDeleteAccount}
+                  disabled={!canDeleteAccount || deletingAccount}
+                  className="mt-4 bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {deletingAccount ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  Delete My Account Permanently
+                </Button>
+              </div>
+            </div>
+          </Card>
         </motion.div>
       </div>
 

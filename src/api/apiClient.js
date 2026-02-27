@@ -95,6 +95,12 @@ export const api = {
           return data;
         });
       },
+      delete: async (id) => {
+        return withTableFallback(['userprofile', 'UserProfile'], async (tableName) => {
+          const { error } = await supabase.from(tableName).delete().eq('id', id);
+          if (error) throw error;
+        });
+      },
     },
     Job: {
       filter: async (filterObj = {}, order) => {
@@ -145,6 +151,10 @@ export const api = {
         const { data, error } = await supabase.from('Application').update(obj).eq('id', id).select().single();
         if (error) throw error;
         return data;
+      },
+      delete: async (id) => {
+        const { error } = await supabase.from('Application').delete().eq('id', id);
+        if (error) throw error;
       }
     },
     SavedJob: {
