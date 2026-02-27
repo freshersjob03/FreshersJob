@@ -28,26 +28,43 @@ export default function Navbar({ user, profile, onLogout, isAuthenticated }) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const { navigateToLogin, clerk, isAuthenticated: authIsAuthenticated } = useAuth();
   const { toast } = useToast();
+  const currentlyAuthenticated = Boolean(authIsAuthenticated || isAuthenticated);
 
   const isEmployer = profile?.role === 'employer';
 
-  const handleLogin = () => {
-    if (authIsAuthenticated) {
-      toast({
-        title: 'Already logged in',
-        description: 'You are already logged in to your account.',
-      });
+  const promptSwitchAccount = async (mode) => {
+    toast({
+      title: 'Already logged in',
+      description: 'You are already logged in to your account. Switch account if you want to continue with another email.',
+    });
+
+    const confirmSwitch = window.confirm(
+      'You are already logged in. Continue with another account? This will log out your current account.'
+    );
+    if (!confirmSwitch) return;
+
+    if (clerk?.signOut) {
+      await clerk.signOut();
+    }
+
+    if (mode === 'register' && clerk?.openSignUp) {
+      clerk.openSignUp({ redirectUrl: createPageUrl('Feed') });
       return;
     }
     navigateToLogin(createPageUrl('Feed'));
   };
 
-  const handleRegister = () => {
-    if (authIsAuthenticated) {
-      toast({
-        title: 'Already logged in',
-        description: 'You are already logged in to your account.',
-      });
+  const handleLogin = async () => {
+    if (currentlyAuthenticated) {
+      await promptSwitchAccount('login');
+      return;
+    }
+    navigateToLogin(createPageUrl('Feed'));
+  };
+
+  const handleRegister = async () => {
+    if (currentlyAuthenticated) {
+      await promptSwitchAccount('register');
       return;
     }
     if (clerk?.openSignUp) {

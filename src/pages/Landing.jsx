@@ -114,8 +114,42 @@ export default function Landing() {
   const notifyAlreadyLoggedIn = () => {
     toast({
       title: 'Already logged in',
-      description: 'You are already logged in to your account.',
+      description: 'You are already logged in to your account. Switch account if you want to continue with another email.',
     });
+  };
+
+  const getRedirectUrl = () =>
+    accountType === 'employer' ? createPageUrl('PostJob') : createPageUrl('Feed');
+
+  const openLoginFlow = () => {
+    localStorage.setItem('freshersjob_pending_role', accountType);
+    navigateToLogin(getRedirectUrl());
+  };
+
+  const openRegisterFlow = () => {
+    localStorage.setItem('freshersjob_pending_role', accountType);
+    const redirectUrl = getRedirectUrl();
+    if (clerk?.openSignUp) {
+      clerk.openSignUp({ redirectUrl });
+      return;
+    }
+    navigateToLogin(redirectUrl);
+  };
+
+  const promptSwitchAccount = async (mode) => {
+    notifyAlreadyLoggedIn();
+    const confirmSwitch = window.confirm(
+      'You are already logged in. Do you want to continue with another account? This will log out your current account.'
+    );
+    if (!confirmSwitch) return;
+    if (clerk?.signOut) {
+      await clerk.signOut();
+    }
+    if (mode === 'register') {
+      openRegisterFlow();
+      return;
+    }
+    openLoginFlow();
   };
 
   const isUserAuthenticated = async () => {
@@ -128,26 +162,18 @@ export default function Landing() {
 
   const handleLogin = async () => {
     if (await isUserAuthenticated()) {
-      notifyAlreadyLoggedIn();
+      await promptSwitchAccount('login');
       return;
     }
-    localStorage.setItem('freshersjob_pending_role', accountType);
-    const redirectUrl = accountType === 'employer' ? createPageUrl('PostJob') : createPageUrl('Feed');
-    navigateToLogin(redirectUrl);
+    openLoginFlow();
   };
 
   const handleRegister = async () => {
     if (await isUserAuthenticated()) {
-      notifyAlreadyLoggedIn();
+      await promptSwitchAccount('register');
       return;
     }
-    localStorage.setItem('freshersjob_pending_role', accountType);
-    const redirectUrl = accountType === 'employer' ? createPageUrl('PostJob') : createPageUrl('Feed');
-    if (clerk?.openSignUp) {
-      clerk.openSignUp({ redirectUrl });
-      return;
-    }
-    navigateToLogin(redirectUrl);
+    openRegisterFlow();
   };
 
   const createJobsUrl = (baseSearch = '') => {
