@@ -29,6 +29,11 @@ function isMissingTableError(error) {
   return msg.includes('could not find the table') || msg.includes('schema cache');
 }
 
+function isMissingColumnError(error, columnName) {
+  const msg = String(error?.message || '').toLowerCase();
+  return msg.includes(`column ${String(columnName).toLowerCase()}`) && msg.includes('does not exist');
+}
+
 async function withTableFallback(tableNames, op) {
   let lastMissingError = null;
   for (const tableName of tableNames) {
@@ -186,14 +191,26 @@ export const api = {
     Application: {
       filter: async (filterObj = {}, order) => {
         return withTableFallback(['applications', 'application', 'Application'], async (tableName) => {
-          let query = supabase.from(tableName).select('*');
-          if (Object.keys(filterObj).length) {
-            query = query.match(filterObj);
+          const runFilter = async (filters) => {
+            let query = supabase.from(tableName).select('*');
+            if (Object.keys(filters).length) {
+              query = query.match(filters);
+            }
+            query = applyOrder(query, order);
+            const { data, error } = await query;
+            if (error) throw error;
+            return data || [];
+          };
+
+          try {
+            return await runFilter(filterObj);
+          } catch (error) {
+            if (filterObj?.candidate_email && isMissingColumnError(error, 'applications.candidate_email')) {
+              const { candidate_email, ...rest } = filterObj;
+              return runFilter({ ...rest, candidate_id: candidate_email });
+            }
+            throw error;
           }
-          query = applyOrder(query, order);
-          const { data, error } = await query;
-          if (error) throw error;
-          return data || [];
         });
       },
       update: async (id, obj) => {
@@ -213,13 +230,25 @@ export const api = {
     SavedJob: {
       filter: async (filterObj = {}) => {
         return withTableFallback(['saved_jobs', 'savedjob', 'SavedJob'], async (tableName) => {
-          let query = supabase.from(tableName).select('*');
-          if (Object.keys(filterObj).length) {
-            query = query.match(filterObj);
+          const runFilter = async (filters) => {
+            let query = supabase.from(tableName).select('*');
+            if (Object.keys(filters).length) {
+              query = query.match(filters);
+            }
+            const { data, error } = await query;
+            if (error) throw error;
+            return data || [];
+          };
+
+          try {
+            return await runFilter(filterObj);
+          } catch (error) {
+            if (filterObj?.user_email && isMissingColumnError(error, 'saved_jobs.user_email')) {
+              const { user_email, ...rest } = filterObj;
+              return runFilter({ ...rest, user_id: user_email });
+            }
+            throw error;
           }
-          const { data, error } = await query;
-          if (error) throw error;
-          return data || [];
         });
       },
       delete: async (id) => {
