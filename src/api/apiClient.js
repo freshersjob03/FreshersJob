@@ -34,6 +34,27 @@ function isMissingColumnError(error, columnName) {
   return msg.includes(`column ${String(columnName).toLowerCase()}`) && msg.includes('does not exist');
 }
 
+async function runWithOrderFallback(buildQuery, order) {
+  let query = buildQuery(order);
+  let { data, error } = await query;
+  if (!error) return data || [];
+
+  const orderCol = order ? (order.startsWith('-') ? order.slice(1) : order) : null;
+  if (orderCol && isMissingColumnError(error, orderCol)) {
+    if (orderCol === 'created_date') {
+      const fallbackOrder = order.startsWith('-') ? '-created_at' : 'created_at';
+      query = buildQuery(fallbackOrder);
+      ({ data, error } = await query);
+      if (!error) return data || [];
+    }
+    query = buildQuery(null);
+    ({ data, error } = await query);
+    if (!error) return data || [];
+  }
+
+  throw error;
+}
+
 async function withTableFallback(tableNames, op) {
   let lastMissingError = null;
   for (const tableName of tableNames) {
@@ -147,24 +168,25 @@ export const api = {
     Job: {
       filter: async (filterObj = {}, order) => {
         return withTableFallback(['jobs', 'job', 'Job'], async (tableName) => {
-          let query = supabase.from(tableName).select('*');
-          if (Object.keys(filterObj).length) {
-            query = query.match(filterObj);
-          }
-          query = applyOrder(query, order);
-          const { data, error } = await query;
-          if (error) throw error;
-          return data || [];
+          const buildQuery = (selectedOrder) => {
+            let query = supabase.from(tableName).select('*');
+            if (Object.keys(filterObj).length) {
+              query = query.match(filterObj);
+            }
+            return applyOrder(query, selectedOrder);
+          };
+          return runWithOrderFallback(buildQuery, order);
         });
       },
       list: async (order, limit) => {
         return withTableFallback(['jobs', 'job', 'Job'], async (tableName) => {
-          let query = supabase.from(tableName).select('*');
-          query = applyOrder(query, order);
-          if (limit) query = query.limit(limit);
-          const { data, error } = await query;
-          if (error) throw error;
-          return data || [];
+          const buildQuery = (selectedOrder) => {
+            let query = supabase.from(tableName).select('*');
+            query = applyOrder(query, selectedOrder);
+            if (limit) query = query.limit(limit);
+            return query;
+          };
+          return runWithOrderFallback(buildQuery, order);
         });
       },
       create: async (obj) => {
