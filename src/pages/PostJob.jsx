@@ -211,14 +211,18 @@ export default function PostJob() {
                 </div>
 
                 <div>
-                  <Label>Company Name *</Label>
+                  <Label>Company Name</Label>
                   <Input
                     value={jobData.company_name}
-                    onChange={(e) => setJobData({ ...jobData, company_name: e.target.value })}
-                    placeholder="Your company name"
-                    required
-                    className="mt-1"
+                    readOnly
+                    placeholder="Company name from your employer profile"
+                    className="mt-1 bg-gray-50"
                   />
+                  {!jobData.company_name && (
+                    <p className="text-xs text-amber-700 mt-1">
+                      Add company name in your employer profile first.
+                    </p>
+                  )}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
@@ -408,7 +412,7 @@ export default function PostJob() {
               <Button
                 type="submit"
                 className="flex-1 btn-primary"
-                disabled={posting || !jobData.title || !jobData.company_name || !jobData.location || !jobData.job_type || !jobData.experience_level || !jobData.description}
+                disabled={posting || !jobData.title || !jobData.company_name || !jobData.location || !jobData.job_type || !jobData.description}
               >
                 {posting ? (
                   <Loader2 className="w-5 h-5 animate-spin" />

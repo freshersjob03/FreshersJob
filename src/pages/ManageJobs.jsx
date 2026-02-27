@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { api } from '@/api/apiClient';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -49,7 +50,8 @@ export default function ManageJobs() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteJobId, setDeleteJobId] = useState(null);
-  const [activeTab, setActiveTab] = useState('active');
+  const [activeTab, setActiveTab] = useState('all');
+  const { toast } = useToast();
 
   useEffect(() => {
     loadData();
@@ -69,13 +71,30 @@ export default function ManageJobs() {
         }
       }
 
-      const employerJobs = await api.entities.Job.filter(
+      let employerJobs = await api.entities.Job.filter(
         { employer_id: userData.email },
         '-created_date'
       );
-      setJobs(employerJobs);
+
+      if (!employerJobs.length) {
+        const allJobs = await api.entities.Job.list('-created_date');
+        employerJobs = (allJobs || []).filter(
+          (j) => j.employer_id === userData.email || j.created_by === userData.email
+        );
+      }
+
+      const normalizedJobs = (employerJobs || []).map((j) => ({
+        ...j,
+        status: j.status || 'active',
+      }));
+      setJobs(normalizedJobs);
     } catch (error) {
       console.error('Error loading jobs:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Failed to load jobs',
+        description: error?.message || 'Could not fetch posted jobs.',
+      });
     } finally {
       setLoading(false);
     }
@@ -110,6 +129,7 @@ export default function ManageJobs() {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'just now';
     return new Date(dateString).toLocaleDateString('en-IN', {
       day: 'numeric',
       month: 'short',
@@ -119,6 +139,7 @@ export default function ManageJobs() {
 
   const filteredJobs = jobs.filter(j => {
     if (activeTab === 'all') return true;
+    if (activeTab === 'active') return (j.status || 'active') === 'active';
     return j.status === activeTab;
   });
 
@@ -199,7 +220,7 @@ export default function ManageJobs() {
                                     {statusConfig.label}
                                   </Badge>
                                 </div>
-                                <p className="text-gray-600 text-sm">{job.company_name}</p>
+                                <p className="text-gray-600 text-sm">{job.company || job.company_name || 'Company'}</p>
                                 <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-500">
                                   <span className="flex items-center gap-1">
                                     <MapPin className="w-3 h-3" />
@@ -211,7 +232,7 @@ export default function ManageJobs() {
                                   </span>
                                   <span className="flex items-center gap-1">
                                     <Clock className="w-3 h-3" />
-                                    Posted {formatDate(job.created_date)}
+                                    Posted {formatDate(job.created_date || job.created_at)}
                                   </span>
                                 </div>
                               </div>
