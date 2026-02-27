@@ -17,13 +17,188 @@ import {
   Loader2,
   CheckCircle2
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+
+const CandidateForm = React.memo(function CandidateForm({ formData, onFieldChange }) {
+  return (
+    <div className="space-y-5">
+      <div className="space-y-2">
+        <Label className="text-gray-700 font-medium">Professional Headline</Label>
+        <Input
+          placeholder="e.g., Fresh Computer Science Graduate | Python Enthusiast"
+          value={formData.headline}
+          onChange={onFieldChange('headline')}
+          autoComplete="off"
+          className="h-12 border-gray-200"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-700 font-medium">Location</Label>
+        <div className="relative">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Input
+            placeholder="e.g., Bangalore, India"
+            value={formData.location}
+            onChange={onFieldChange('location')}
+            autoComplete="off"
+            className="pl-10 h-12 border-gray-200"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-700 font-medium">Education</Label>
+        <div className="relative">
+          <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Input
+            placeholder="e.g., B.Tech in Computer Science from IIT Delhi"
+            value={formData.education}
+            onChange={onFieldChange('education')}
+            autoComplete="off"
+            className="pl-10 h-12 border-gray-200"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-700 font-medium">Skills (comma separated)</Label>
+        <Input
+          placeholder="e.g., Python, Java, React, SQL"
+          value={formData.skills}
+          onChange={onFieldChange('skills')}
+          autoComplete="off"
+          className="h-12 border-gray-200"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-700 font-medium">About You</Label>
+        <Textarea
+          placeholder="Tell employers about yourself..."
+          value={formData.bio}
+          onChange={onFieldChange('bio')}
+          className="min-h-[100px] border-gray-200"
+        />
+      </div>
+    </div>
+  );
+});
+
+const EmployerForm = React.memo(function EmployerForm({ formData, onFieldChange, user }) {
+  return (
+    <div className="space-y-5">
+      <div className="space-y-2">
+        <Label className="text-gray-700 font-medium">Company Name</Label>
+        <div className="relative">
+          <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Input
+            placeholder="e.g., TCS, Infosys"
+            value={formData.company_name}
+            onChange={onFieldChange('company_name')}
+            autoComplete="off"
+            className="pl-10 h-12 border-gray-200"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-700 font-medium">Your Name</Label>
+        <Input
+          value={user?.full_name || user?.name || ''}
+          readOnly
+          className="h-12 border-gray-200 bg-gray-50"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-700 font-medium">Phone Number</Label>
+        <Input
+          placeholder="e.g., +91 98765 43210"
+          value={formData.phone}
+          onChange={onFieldChange('phone')}
+          autoComplete="off"
+          className="h-12 border-gray-200"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-700 font-medium">Your Role / Designation</Label>
+        <Input
+          placeholder="e.g., HR Manager, Talent Acquisition Lead"
+          value={formData.headline}
+          onChange={onFieldChange('headline')}
+          autoComplete="off"
+          className="h-12 border-gray-200"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-700 font-medium">Company Website</Label>
+        <div className="relative">
+          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Input
+            placeholder="e.g., https://company.com"
+            value={formData.company_website}
+            onChange={onFieldChange('company_website')}
+            autoComplete="off"
+            className="pl-10 h-12 border-gray-200"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-700 font-medium">Company Size</Label>
+        <div className="relative">
+          <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <select
+            value={formData.company_size}
+            onChange={onFieldChange('company_size')}
+            className="w-full pl-10 h-12 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#3aafc4]"
+          >
+            <option value="">Select company size</option>
+            <option value="1-10">1-10 employees</option>
+            <option value="11-50">11-50 employees</option>
+            <option value="51-200">51-200 employees</option>
+            <option value="201-500">201-500 employees</option>
+            <option value="501-1000">501-1000 employees</option>
+            <option value="1000+">1000+ employees</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-700 font-medium">Location</Label>
+        <div className="relative">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Input
+            placeholder="e.g., Mumbai, India"
+            value={formData.location}
+            onChange={onFieldChange('location')}
+            autoComplete="off"
+            className="pl-10 h-12 border-gray-200"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-gray-700 font-medium">About Company</Label>
+        <Textarea
+          placeholder="Tell candidates about your company..."
+          value={formData.bio}
+          onChange={onFieldChange('bio')}
+          className="min-h-[100px] border-gray-200"
+        />
+      </div>
+    </div>
+  );
+});
 
 export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [role, setRole] = useState('candidate');
   const [roleLocked, setRoleLocked] = useState(false);
   const [existingProfileId, setExistingProfileId] = useState(null);
+  const [initializing, setInitializing] = useState(true);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
@@ -93,6 +268,8 @@ export default function Onboarding() {
     } catch (error) {
       // Not logged in
       window.location.href = createPageUrl('Login');
+    } finally {
+      setInitializing(false);
     }
   };
 
@@ -139,175 +316,18 @@ export default function Onboarding() {
     }
   };
 
-  const CandidateForm = () => (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="space-y-5"
-    >
-      <div className="space-y-2">
-        <Label className="text-gray-700 font-medium">Professional Headline</Label>
-        <Input
-          placeholder="e.g., Fresh Computer Science Graduate | Python Enthusiast"
-          value={formData.headline}
-          onChange={(e) => setFormData({...formData, headline: e.target.value})}
-          className="h-12 border-gray-200"
-        />
-      </div>
+  const updateField = (field) => (e) => {
+    const value = e?.target?.value ?? '';
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
-      <div className="space-y-2">
-        <Label className="text-gray-700 font-medium">Location</Label>
-        <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <Input
-            placeholder="e.g., Bangalore, India"
-            value={formData.location}
-            onChange={(e) => setFormData({...formData, location: e.target.value})}
-            className="pl-10 h-12 border-gray-200"
-          />
-        </div>
+  if (initializing) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#3aafc4] animate-spin" />
       </div>
-
-      <div className="space-y-2">
-        <Label className="text-gray-700 font-medium">Education</Label>
-        <div className="relative">
-          <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <Input
-            placeholder="e.g., B.Tech in Computer Science from IIT Delhi"
-            value={formData.education}
-            onChange={(e) => setFormData({...formData, education: e.target.value})}
-            className="pl-10 h-12 border-gray-200"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-gray-700 font-medium">Skills (comma separated)</Label>
-        <Input
-          placeholder="e.g., Python, Java, React, SQL"
-          value={formData.skills}
-          onChange={(e) => setFormData({...formData, skills: e.target.value})}
-          className="h-12 border-gray-200"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-gray-700 font-medium">About You</Label>
-        <Textarea
-          placeholder="Tell employers about yourself..."
-          value={formData.bio}
-          onChange={(e) => setFormData({...formData, bio: e.target.value})}
-          className="min-h-[100px] border-gray-200"
-        />
-      </div>
-    </motion.div>
-  );
-
-  const EmployerForm = () => (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="space-y-5"
-    >
-      <div className="space-y-2">
-        <Label className="text-gray-700 font-medium">Company Name</Label>
-        <div className="relative">
-          <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <Input
-            placeholder="e.g., TCS, Infosys"
-            value={formData.company_name}
-            onChange={(e) => setFormData({...formData, company_name: e.target.value})}
-            className="pl-10 h-12 border-gray-200"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-gray-700 font-medium">Your Name</Label>
-        <Input
-          value={user?.full_name || user?.name || ''}
-          readOnly
-          className="h-12 border-gray-200 bg-gray-50"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-gray-700 font-medium">Phone Number</Label>
-        <Input
-          placeholder="e.g., +91 98765 43210"
-          value={formData.phone}
-          onChange={(e) => setFormData({...formData, phone: e.target.value})}
-          className="h-12 border-gray-200"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-gray-700 font-medium">Your Role / Designation</Label>
-        <Input
-          placeholder="e.g., HR Manager, Talent Acquisition Lead"
-          value={formData.headline}
-          onChange={(e) => setFormData({...formData, headline: e.target.value})}
-          className="h-12 border-gray-200"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-gray-700 font-medium">Company Website</Label>
-        <div className="relative">
-          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <Input
-            placeholder="e.g., https://company.com"
-            value={formData.company_website}
-            onChange={(e) => setFormData({...formData, company_website: e.target.value})}
-            className="pl-10 h-12 border-gray-200"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-gray-700 font-medium">Company Size</Label>
-        <div className="relative">
-          <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <select
-            value={formData.company_size}
-            onChange={(e) => setFormData({...formData, company_size: e.target.value})}
-            className="w-full pl-10 h-12 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#3aafc4]"
-          >
-            <option value="">Select company size</option>
-            <option value="1-10">1-10 employees</option>
-            <option value="11-50">11-50 employees</option>
-            <option value="51-200">51-200 employees</option>
-            <option value="201-500">201-500 employees</option>
-            <option value="501-1000">501-1000 employees</option>
-            <option value="1000+">1000+ employees</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-gray-700 font-medium">Location</Label>
-        <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <Input
-            placeholder="e.g., Mumbai, India"
-            value={formData.location}
-            onChange={(e) => setFormData({...formData, location: e.target.value})}
-            className="pl-10 h-12 border-gray-200"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-gray-700 font-medium">About Company</Label>
-        <Textarea
-          placeholder="Tell candidates about your company..."
-          value={formData.bio}
-          onChange={(e) => setFormData({...formData, bio: e.target.value})}
-          className="min-h-[100px] border-gray-200"
-        />
-      </div>
-    </motion.div>
-  );
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
@@ -399,7 +419,11 @@ export default function Onboarding() {
               </div>
             ) : (
               <div className="space-y-6">
-                {role === 'candidate' ? <CandidateForm /> : <EmployerForm />}
+                {role === 'candidate' ? (
+                  <CandidateForm formData={formData} onFieldChange={updateField} />
+                ) : (
+                  <EmployerForm formData={formData} onFieldChange={updateField} user={user} />
+                )}
                 
                 <div className="flex gap-3 pt-4">
                   <Button 
