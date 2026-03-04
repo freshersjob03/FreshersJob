@@ -261,9 +261,26 @@ export const api = {
         }
       },
       update: async (id, obj) => {
-        // Backend doesn't have update endpoint, so we'll skip for now
-        console.warn('Job update not implemented in backend');
-        return { id, ...obj };
+        try {
+          const response = await fetch(`http://localhost:5000/api/jobs/${id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(obj || {}),
+          });
+
+          if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || 'Failed to update job');
+          }
+
+          const result = await response.json();
+          return result.job || result;
+        } catch (error) {
+          console.error('Job update error:', error);
+          throw error;
+        }
       },
       delete: async (id) => {
         try {

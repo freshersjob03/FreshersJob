@@ -5,11 +5,59 @@ const pool = require("../config/db");
 // GET ALL JOBS
 router.get("/", async (req, res) => {
   try {
-    const jobs = await pool.query(
-      "SELECT * FROM jobs ORDER BY created_at DESC"
-    );
+    let query = "SELECT * FROM jobs";
+    const params = [];
+    const conditions = [];
+    
+    // Handle filtering
+    if (req.query.employer_id) {
+      conditions.push(`employer_id = $${params.length + 1}`);
+      params.push(req.query.employer_id);
+    }
+    
+    if (req.query.status) {
+      conditions.push(`status = $${params.length + 1}`);
+      params.push(req.query.status);
+    }
+    
+    if (req.query.id) {
+      conditions.push(`id = $${params.length + 1}`);
+      params.push(req.query.id);
+    }
+    
+    // Add WHERE clause if there are conditions
+    if (conditions.length > 0) {
+      query += " WHERE " + conditions.join(" AND ");
+    }
+    
+    // Handle ordering
+    if (req.query.order) {
+      const orderField = req.query.order.startsWith('-') ? req.query.order.slice(1) : req.query.order;
+      const orderDirection = req.query.order.startsWith('-') ? 'DESC' : 'ASC';
+      
+      // Validate order field to prevent SQL injection
+      const allowedFields = ['created_at', 'title', 'company', 'location'];
+      if (allowedFields.includes(orderField)) {
+        query += ` ORDER BY ${orderField} ${orderDirection}`;
+      } else {
+        query += " ORDER BY created_at DESC";
+      }
+    } else {
+      query += " ORDER BY created_at DESC";
+    }
+    
+    // Handle limiting
+    if (req.query.limit) {
+      const limit = parseInt(req.query.limit);
+      if (!isNaN(limit) && limit > 0) {
+        query += ` LIMIT ${limit}`;
+      }
+    }
+    
+    const jobs = await pool.query(query, params);
     res.json(jobs.rows);
   } catch (err) {
+    console.error('Error fetching jobs:', err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
@@ -37,7 +85,59 @@ router.post("/", async (req, res) => {
       "INSERT INTO jobs (title, company, location, job_type, salary_min, salary_max, description, requirements, skills, employer_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *",
       [title, company, location, job_type, salary_min, salary_max, description, requirements, skills, employer_id]
     );
-    res.status(201).json({ message: "Job posted successfully! 🎉", job: newJob.rows[0] });
+    res.status(201).json({ message: "Job posted successfully! ", job: newJob.rows[0] });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+// UPDATE A JOB (partial)
+router.put("/:id", async (req, res) => {
+  try {
+    const allowedFields = [
+      "title",
+      "company",
+      "company_name",
+      "location",
+      "job_type",
+      "experience_level",
+      "salary_min",
+      "salary_max",
+      "description",
+      "requirements",
+      "skills",
+      "status",
+      "applications_count",
+      "company_logo",
+      "created_by",
+      "created_date",
+      "created_at",
+      "employer_id",
+    ];
+
+    const payload = req.body || {};
+    const entries = Object.entries(payload).filter(([key, value]) =>
+      allowedFields.includes(key) && value !== undefined
+    );
+
+    if (entries.length === 0) {
+      return res.status(400).json({ message: "No valid fields to update." });
+    }
+
+    const setClause = entries
+      .map(([key], index) => `${key} = $${index + 1}`)
+      .join(", ");
+    const values = entries.map(([, value]) => value);
+    values.push(req.params.id);
+
+    const query = `UPDATE jobs SET ${setClause} WHERE id = $${values.length} RETURNING *`;
+    const updated = await pool.query(query, values);
+
+    if (updated.rows.length === 0) {
+      return res.status(404).json({ message: "Job not found!" });
+    }
+
+    res.json({ message: "Job updated successfully!", job: updated.rows[0] });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
@@ -77,10 +177,7 @@ router.post("/save", async (req, res) => {
 router.get("/saved/:user_id", async (req, res) => {
   try {
     const saved = await pool.query(
-      "SELECT s.*, j.title, j.company, j.location, j.job_type, j.salary_min, j.salary_max, j.skills FROM saved_jobs s JOIN jobs j ON s.job_id = j.id WHERE s.user_id = $1",
-      [req.params.user_id]
-    );
-    res.json(saved.rows);
+      "SELECT s.*, j.title, j.company
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
