@@ -48,6 +48,11 @@ function isMissingBucketError(error) {
   return msg.includes('bucket') && (msg.includes('not found') || msg.includes('does not exist'));
 }
 
+function isUnsupportedMimeTypeError(error) {
+  const msg = String(error?.message || '').toLowerCase();
+  return msg.includes('mime type') && msg.includes('not supported');
+}
+
 async function runWithOrderFallback(buildQuery, order) {
   let query = buildQuery(order);
   let { data, error } = await query;
@@ -433,16 +438,19 @@ export const api = {
             break;
           }
           lastError = uploadError;
-          if (!isMissingBucketError(uploadError)) {
+          // Try the next candidate bucket for missing-bucket and mime-restriction errors.
+          if (!isMissingBucketError(uploadError) && !isUnsupportedMimeTypeError(uploadError)) {
             break;
           }
         }
 
         if (!uploadedBucket) {
-          throw new Error(
-            lastError?.message ||
-            'Upload failed. Storage bucket missing or blocked by policy.'
-          );
+          if (isUnsupportedMimeTypeError(lastError)) {
+            throw new Error(
+              'Resume bucket does not allow this file type. In Supabase Storage, allow MIME types: application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document.'
+            );
+          }
+          throw new Error(lastError?.message || 'Upload failed. Storage bucket missing or blocked by policy.');
         }
 
         const { data } = supabase.storage.from(uploadedBucket).getPublicUrl(path);
