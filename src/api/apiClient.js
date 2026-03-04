@@ -26,12 +26,21 @@ function getFileExt(name) {
 
 function isMissingTableError(error) {
   const msg = String(error?.message || '').toLowerCase();
-  return msg.includes('could not find the table') || msg.includes('schema cache');
+  return (
+    msg.includes('could not find the table') ||
+    (msg.includes('relation') && msg.includes('does not exist'))
+  );
 }
 
 function isMissingColumnError(error, columnName) {
   const msg = String(error?.message || '').toLowerCase();
-  return msg.includes(`column ${String(columnName).toLowerCase()}`) && msg.includes('does not exist');
+  const full = String(columnName).toLowerCase();
+  const short = full.includes('.') ? full.split('.').pop() : full;
+  return (
+    (msg.includes(`column ${full}`) && msg.includes('does not exist')) ||
+    (msg.includes('column') && msg.includes(short) && msg.includes('does not exist')) ||
+    (msg.includes('could not find the') && msg.includes('column') && msg.includes(short))
+  );
 }
 
 function isMissingBucketError(error) {
