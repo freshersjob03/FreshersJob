@@ -239,13 +239,19 @@ export const api = {
         }
       },
       create: async (obj) => {
+        const payload = {
+          ...obj,
+          company_name: obj?.company_name || obj?.company || null,
+          company: obj?.company || obj?.company_name || null,
+        };
+
         try {
           const response = await fetch('http://localhost:5000/api/jobs', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(obj),
+            body: JSON.stringify(payload),
           });
           
           if (!response.ok) {
@@ -256,8 +262,19 @@ export const api = {
           const result = await response.json();
           return result.job;
         } catch (error) {
-          console.error('Job create error:', error);
-          throw error;
+          // Production often has no local Express backend. Fallback to Supabase.
+          try {
+            const { data, error: insertError } = await supabase
+              .from('jobs')
+              .insert(payload)
+              .select()
+              .single();
+            if (insertError) throw insertError;
+            return data;
+          } catch (fallbackError) {
+            console.error('Job create error:', error);
+            throw fallbackError;
+          }
         }
       },
       update: async (id, obj) => {
