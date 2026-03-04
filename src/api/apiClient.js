@@ -328,8 +328,11 @@ export const api = {
             }
           }
 
-          // Retry a few times by removing extra fields unknown to this schema.
-          for (let i = 0; i < 5; i += 1) {
+          // Retry by removing extra fields unknown to this schema.
+          // Some projects keep a minimal applications table, so we may need
+          // to remove multiple optional fields one-by-one.
+          const maxAttempts = Math.max(8, Object.keys(payload).length + 2);
+          for (let i = 0; i < maxAttempts; i += 1) {
             try {
               return await runCreate(payload);
             } catch (retryError) {
