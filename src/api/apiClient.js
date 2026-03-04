@@ -43,6 +43,18 @@ function isMissingColumnError(error, columnName) {
   );
 }
 
+function getMissingColumnName(error) {
+  const msg = String(error?.message || '').toLowerCase();
+  const matchA = msg.match(/column\s+["']?([a-z0-9_.]+)["']?\s+(does not exist|was not found)/i);
+  const matchB = msg.match(/could not find the\s+["']?([a-z0-9_.]+)["']?\s+column/i);
+  const raw = matchA?.[1] || matchB?.[1] || null;
+  if (raw) {
+    const col = raw.toLowerCase();
+    return col.includes('.') ? col.split('.').pop() : col;
+  }
+  return null;
+}
+
 function isMissingBucketError(error) {
   const msg = String(error?.message || '').toLowerCase();
   return msg.includes('bucket') && (msg.includes('not found') || msg.includes('does not exist'));
@@ -304,15 +316,34 @@ export const api = {
             return data;
           };
 
+          let payload = { ...obj };
           try {
-            return await runCreate(obj);
+            return await runCreate(payload);
           } catch (error) {
-            if (obj?.candidate_email && isMissingColumnError(error, 'applications.candidate_email')) {
-              const { candidate_email, ...rest } = obj;
-              return runCreate({ ...rest, candidate_id: candidate_email });
+            if (payload?.candidate_email && isMissingColumnError(error, 'applications.candidate_email')) {
+              const { candidate_email, ...rest } = payload;
+              payload = { ...rest, candidate_id: candidate_email };
+            } else {
+              throw error;
             }
-            throw error;
           }
+
+          // Retry a few times by removing extra fields unknown to this schema.
+          for (let i = 0; i < 5; i += 1) {
+            try {
+              return await runCreate(payload);
+            } catch (retryError) {
+              const missingCol = getMissingColumnName(retryError);
+              if (!missingCol || !(missingCol in payload)) {
+                throw retryError;
+              }
+              const next = { ...payload };
+              delete next[missingCol];
+              payload = next;
+            }
+          }
+
+          return runCreate(payload);
         });
       },
       update: async (id, obj) => {
