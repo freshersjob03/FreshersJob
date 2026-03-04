@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/components/ui/working-toast';
 import {
   Dialog,
   DialogContent,
@@ -45,7 +46,9 @@ export default function JobDetails() {
   const [showApplyDialog, setShowApplyDialog] = useState(false);
   const [coverLetter, setCoverLetter] = useState('');
   const [resumeFile, setResumeFile] = useState(null);
+  const [resumeFileName, setResumeFileName] = useState('');
   const [uploadingResume, setUploadingResume] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     loadData();
@@ -55,6 +58,7 @@ export default function JobDetails() {
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const jobId = urlParams.get('id');
+      const normalizedJobId = Number.isNaN(Number(jobId)) ? jobId : Number(jobId);
 
       if (!jobId) {
         window.location.href = createPageUrl('Jobs');
@@ -82,14 +86,15 @@ export default function JobDetails() {
 
         // Check if saved
         const saved = await api.entities.SavedJob.filter({ 
-          job_id: jobId, 
-          user_email: userData.email 
+          job_id: normalizedJobId, 
+          user_email: userData.email,
+          user_id: userData.id
         });
         setIsSaved(saved.length > 0);
 
         // Check if applied
         const applications = await api.entities.Application.filter({ 
-          job_id: jobId, 
+          job_id: normalizedJobId, 
           candidate_email: userData.email 
         });
         setHasApplied(applications.length > 0);
@@ -111,7 +116,8 @@ export default function JobDetails() {
       if (isSaved) {
         const saved = await api.entities.SavedJob.filter({ 
           job_id: job.id, 
-          user_email: user.email 
+          user_email: user.email,
+          user_id: user.id
         });
         if (saved.length > 0) {
           await api.entities.SavedJob.delete(saved[0].id);
@@ -120,7 +126,8 @@ export default function JobDetails() {
       } else {
         await api.entities.SavedJob.create({
           job_id: job.id,
-          user_email: user.email
+          user_email: user.email,
+          user_id: user.id
         });
         setIsSaved(true);
       }
@@ -137,10 +144,21 @@ export default function JobDetails() {
     try {
       const { file_url } = await api.integrations.Core.UploadFile({ file });
       setResumeFile(file_url);
+      setResumeFileName(file.name || 'resume');
+      toast({
+        title: 'Resume uploaded',
+        description: 'Your file is ready to submit with this application.',
+      });
     } catch (error) {
       console.error('Error uploading resume:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Resume upload failed',
+        description: error?.message || 'Could not upload resume. Check storage bucket and policies.',
+      });
     } finally {
       setUploadingResume(false);
+      e.target.value = '';
     }
   };
 
@@ -386,7 +404,7 @@ export default function JobDetails() {
                 <div className="mt-2 p-3 bg-green-50 rounded-lg flex items-center justify-between">
                   <span className="flex items-center gap-2 text-sm text-green-700">
                     <CheckCircle2 className="w-4 h-4" />
-                    Resume uploaded
+                    {resumeFileName ? `Resume uploaded: ${resumeFileName}` : 'Resume uploaded'}
                   </span>
                   <label className="text-[#3aafc4] text-sm cursor-pointer hover:underline">
                     Change

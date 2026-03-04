@@ -48,12 +48,12 @@ export default function Feed() {
       setProfile(profiles[0]);
 
       // Load jobs
-      const jobsData = await api.entities.Job.filter({ status: 'active' }, '-created_date', 10);
+      const jobsData = await api.entities.Job.filter({ status: 'active' }, '-created_at', 10);
       setJobs(jobsData);
 
       // Load saved jobs
-      const saved = await api.entities.SavedJob.filter({ user_email: userData.email });
-      setSavedJobs(saved.map(s => s.job_id));
+      const saved = await api.entities.SavedJob.filter({ user_email: userData.email, user_id: userData.id });
+      setSavedJobs(saved.map(s => String(s.job_id)));
 
       // Load applications
       const apps = await api.entities.Application.filter({ candidate_email: userData.email });
@@ -67,21 +67,24 @@ export default function Feed() {
 
   const handleSaveJob = async (job) => {
     try {
-      if (savedJobs.includes(job.id)) {
+      const jobId = String(job.id);
+      if (savedJobs.includes(jobId)) {
         const saved = await api.entities.SavedJob.filter({ 
           job_id: job.id, 
-          user_email: user.email 
+          user_email: user.email,
+          user_id: user.id
         });
         if (saved.length > 0) {
           await api.entities.SavedJob.delete(saved[0].id);
-          setSavedJobs(savedJobs.filter(id => id !== job.id));
+          setSavedJobs(savedJobs.filter(id => id !== jobId));
         }
       } else {
         await api.entities.SavedJob.create({
           job_id: job.id,
-          user_email: user.email
+          user_email: user.email,
+          user_id: user.id
         });
-        setSavedJobs([...savedJobs, job.id]);
+        setSavedJobs([...savedJobs, jobId]);
       }
     } catch (error) {
       console.error('Error saving job:', error);
@@ -256,7 +259,7 @@ export default function Feed() {
                   >
                     <JobCard
                       job={job}
-                      isSaved={savedJobs.includes(job.id)}
+                      isSaved={savedJobs.includes(String(job.id))}
                       hasApplied={applications.includes(job.id)}
                       onSave={!isEmployer ? handleSaveJob : null}
                       onApply={!isEmployer ? handleApply : null}

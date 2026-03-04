@@ -3,7 +3,7 @@ import { createPageUrl } from '@/utils';
 import { api } from '@/api/apiClient';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/working-toast';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -151,7 +151,7 @@ export default function Profile() {
       const profilePayload = { ...editData };
       // Never send immutable/generated columns in update/create payloads.
       delete profilePayload.id;
-      delete profilePayload.created_date;
+      delete profilePayload.created_at;
 
       if (profile && profile.id) {
         await api.entities.UserProfile.update(profile.id, profilePayload);
@@ -200,7 +200,7 @@ export default function Profile() {
     setDeletingAccount(true);
     try {
       const [savedJobs, candidateApplications, jobs, profiles] = await Promise.all([
-        api.entities.SavedJob.filter({ user_email: user.email }),
+        api.entities.SavedJob.filter({ user_email: user.email, user_id: user.id }),
         api.entities.Application.filter({ candidate_email: user.email }),
         api.entities.Job.filter({ employer_id: user.email }),
         api.entities.UserProfile.filter({ created_by: user.email }),

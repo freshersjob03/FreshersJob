@@ -22,13 +22,13 @@ export default function SavedJobs() {
       const userData = await api.auth.me();
       setUser(userData);
 
-      const saved = await api.entities.SavedJob.filter({ user_email: userData.email });
+      const saved = await api.entities.SavedJob.filter({ user_email: userData.email, user_id: userData.id });
       setSavedJobs(saved);
 
       if (saved.length > 0) {
-        const allJobs = await api.entities.Job.list('-created_date', 1000);
-        const savedJobIds = saved.map(s => s.job_id);
-        const savedJobDetails = allJobs.filter(j => savedJobIds.includes(j.id));
+        const allJobs = await api.entities.Job.list('-created_at', 1000);
+        const savedJobIds = new Set(saved.map((s) => String(s.job_id)));
+        const savedJobDetails = allJobs.filter((j) => savedJobIds.has(String(j.id)));
         setJobs(savedJobDetails);
       }
 
@@ -43,11 +43,11 @@ export default function SavedJobs() {
 
   const handleRemoveSaved = async (job) => {
     try {
-      const saved = savedJobs.find(s => s.job_id === job.id);
+      const saved = savedJobs.find((s) => String(s.job_id) === String(job.id));
       if (saved) {
         await api.entities.SavedJob.delete(saved.id);
-        setSavedJobs(savedJobs.filter(s => s.job_id !== job.id));
-        setJobs(jobs.filter(j => j.id !== job.id));
+        setSavedJobs(savedJobs.filter((s) => String(s.job_id) !== String(job.id)));
+        setJobs(jobs.filter((j) => String(j.id) !== String(job.id)));
       }
     } catch (error) {
       console.error('Error removing saved job:', error);
