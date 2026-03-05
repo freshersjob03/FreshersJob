@@ -211,6 +211,16 @@ export default function JobDetails() {
         return;
       }
 
+      // Keep profile phone in sync so employer view can still show phone
+      // even if applications table schema drops candidate_phone.
+      if (profile?.id && !profile?.phone) {
+        try {
+          await api.entities.UserProfile.update(profile.id, { phone: resolvedPhone });
+        } catch (_) {
+          // Non-blocking: application submit should still continue.
+        }
+      }
+
       const applicationPayload = {
         job_id: job.id,
         candidate_email: user.email,
