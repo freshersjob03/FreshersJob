@@ -52,6 +52,28 @@ export default function JobDetails() {
   const [uploadingResume, setUploadingResume] = useState(false);
   const { toast } = useToast();
 
+  const buildApplicantName = () => {
+    const clerkUser = window?.Clerk?.user;
+    const clerkName = [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(' ').trim();
+    if (clerkName) return clerkName;
+
+    const authName = String(user?.full_name || user?.name || '').trim();
+    const headline = String(profile?.headline || '').trim();
+    if (authName && (!headline || authName.toLowerCase() !== headline.toLowerCase()) && !authName.includes('@')) {
+      return authName;
+    }
+
+    const emailName = (user?.email || '')
+      .split('@')[0]
+      .replace(/[._-]+/g, ' ')
+      .trim();
+    if (emailName) {
+      return emailName.replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+
+    return user?.email || 'Candidate';
+  };
+
   useEffect(() => {
     loadData();
   }, []);
@@ -198,9 +220,7 @@ export default function JobDetails() {
       // Include optional fields only when we actually have values.
       // This reduces schema-mismatch retries on projects with minimal tables.
       if (user?.id) applicationPayload.candidate_id = user.id;
-      if (user?.full_name || user?.email) {
-        applicationPayload.candidate_name = user.full_name || user.email;
-      }
+      applicationPayload.candidate_name = buildApplicantName();
       applicationPayload.candidate_phone = resolvedPhone;
       if (resumeFile || profile?.resume_url) {
         applicationPayload.resume_url = resumeFile || profile?.resume_url || '';

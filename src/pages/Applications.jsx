@@ -69,12 +69,21 @@ export default function Applications() {
 
   const getCandidateDisplayName = (app) => {
     const profile = candidateProfiles[app?.candidate_email];
+    const emailName = app?.candidate_email
+      ? app.candidate_email.split('@')[0].replace(/[._-]+/g, ' ').trim()
+      : '';
+    const prettyEmailName = emailName
+      ? emailName.replace(/\b\w/g, (c) => c.toUpperCase())
+      : '';
+    const appName = String(app?.candidate_name || '').trim();
+    const headline = String(profile?.headline || '').trim();
+    const isAppNameProbablyHeadline = appName && headline && appName.toLowerCase() === headline.toLowerCase();
+
     return (
-      app?.candidate_name ||
+      (!isAppNameProbablyHeadline ? appName : '') ||
       profile?.full_name ||
       profile?.name ||
-      profile?.headline ||
-      (app?.candidate_email ? app.candidate_email.split('@')[0] : '') ||
+      prettyEmailName ||
       'Candidate'
     );
   };
