@@ -50,6 +50,63 @@ export default function Applications() {
     loadData();
   }, []);
 
+  const loadProfilesForApplications = async (apps) => {
+    const profiles = {};
+    for (const app of apps) {
+      if (!app?.candidate_email) continue;
+      const candidateProfile = await api.entities.UserProfile.filter({
+        created_by: app.candidate_email
+      });
+      if (candidateProfile.length > 0) {
+        profiles[app.candidate_email] = candidateProfile[0];
+      }
+    }
+    setCandidateProfiles(profiles);
+  };
+
+  const loadApplicationsForJob = async (jobId, userEmail, selectedJob) => {
+    const normalizedJobId = Number.isNaN(Number(jobId)) ? String(jobId) : String(Number(jobId));
+
+    try {
+      const direct = await api.entities.Application.filter({ job_id: normalizedJobId }, '-created_at');
+      if (direct.length > 0) return direct;
+    } catch (_) {}
+
+    try {
+      const byEmployer = await api.entities.Application.filter({ employer_id: userEmail }, '-created_at');
+      const filtered = byEmployer.filter((a) => String(a?.job_id ?? '') === normalizedJobId);
+      if (filtered.length > 0) return filtered;
+    } catch (_) {}
+
+    const all = await api.entities.Application.filter({}, '-created_at');
+    return all.filter((a) => {
+      const appJobId = String(a?.job_id ?? '');
+      if (appJobId && appJobId === normalizedJobId) return true;
+      if (!selectedJob) return false;
+      const sameTitle = a?.job_title && selectedJob?.title && a.job_title === selectedJob.title;
+      const sameCompany =
+        a?.company_name &&
+        (a.company_name === selectedJob?.company_name || a.company_name === selectedJob?.company);
+      return !!(sameTitle && sameCompany);
+    });
+  };
+
+  const loadApplicationsForEmployer = async (userEmail) => {
+    try {
+      const byEmployer = await api.entities.Application.filter({ employer_id: userEmail }, '-created_at');
+      if (byEmployer.length > 0) return byEmployer;
+    } catch (_) {}
+
+    const [jobsByEmployer, jobsByCreatedBy, allApplications] = await Promise.all([
+      api.entities.Job.filter({ employer_id: userEmail }, '-created_at').catch(() => []),
+      api.entities.Job.filter({ created_by: userEmail }, '-created_at').catch(() => []),
+      api.entities.Application.filter({}, '-created_at').catch(() => []),
+    ]);
+
+    const ownedIds = new Set([...jobsByEmployer, ...jobsByCreatedBy].map((j) => String(j.id)));
+    return allApplications.filter((a) => ownedIds.has(String(a?.job_id ?? '')));
+  };
+
   const loadData = async () => {
     try {
       const userData = await api.auth.me();
@@ -60,34 +117,20 @@ export default function Applications() {
 
       if (jobId) {
         const jobs = await api.entities.Job.filter({ id: jobId });
+        let selectedJob = null;
         if (jobs.length > 0) {
-          setJob(jobs[0]);
+          selectedJob = jobs[0];
+          setJob(selectedJob);
         }
 
-        const apps = await api.entities.Application.filter(
-          { job_id: jobId },
-          '-created_date'
-        );
+        const apps = await loadApplicationsForJob(jobId, userData.email, selectedJob);
         setApplications(apps);
-
-        // Load candidate profiles
-        const profiles = {};
-        for (const app of apps) {
-          const candidateProfile = await api.entities.UserProfile.filter({ 
-            created_by: app.candidate_email 
-          });
-          if (candidateProfile.length > 0) {
-            profiles[app.candidate_email] = candidateProfile[0];
-          }
-        }
-        setCandidateProfiles(profiles);
+        await loadProfilesForApplications(apps);
       } else {
         // Load all applications for employer
-        const apps = await api.entities.Application.filter(
-          { employer_id: userData.email },
-          '-created_date'
-        );
+        const apps = await loadApplicationsForEmployer(userData.email);
         setApplications(apps);
+        await loadProfilesForApplications(apps);
       }
     } catch (error) {
       console.error('Error loading applications:', error);
@@ -243,7 +286,7 @@ export default function Applications() {
                           <h3 className="font-bold text-gray-900">{app.candidate_name}</h3>
                           <p className="text-gray-600 text-sm">{app.candidate_email}</p>
                           <p className="text-gray-400 text-xs mt-1">
-                            Applied {formatDate(app.created_date)}
+                            Applied {formatDate(app.created_at)}
                           </p>
                         </div>
                       </div>
@@ -409,7 +452,7 @@ export default function Applications() {
               {/* Applied Date */}
               <div className="pt-4 border-t border-gray-100">
                 <p className="text-sm text-gray-400">
-                  Applied on {formatDate(selectedApplication.created_date)}
+                  Applied on {formatDate(selectedApplication.created_at)}
                 </p>
               </div>
             </div>
