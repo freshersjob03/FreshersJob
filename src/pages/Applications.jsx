@@ -16,6 +16,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -50,15 +51,31 @@ export default function Applications() {
     loadData();
   }, []);
 
+  const resolveCandidateEmail = (app) => {
+    if (app?.candidate_email) return app.candidate_email;
+    if (typeof app?.candidate_id === 'string' && app.candidate_id.includes('@')) {
+      return app.candidate_id;
+    }
+    return null;
+  };
+
+  const normalizeApplication = (app) => ({
+    ...app,
+    candidate_email: resolveCandidateEmail(app),
+    candidate_name: app?.candidate_name || app?.name || 'Candidate',
+    created_at: app?.created_at || app?.applied_at || app?.updated_at || null,
+  });
+
   const loadProfilesForApplications = async (apps) => {
     const profiles = {};
     for (const app of apps) {
-      if (!app?.candidate_email) continue;
+      const candidateEmail = resolveCandidateEmail(app);
+      if (!candidateEmail) continue;
       const candidateProfile = await api.entities.UserProfile.filter({
-        created_by: app.candidate_email
+        created_by: candidateEmail
       });
       if (candidateProfile.length > 0) {
-        profiles[app.candidate_email] = candidateProfile[0];
+        profiles[candidateEmail] = candidateProfile[0];
       }
     }
     setCandidateProfiles(profiles);
@@ -124,13 +141,15 @@ export default function Applications() {
         }
 
         const apps = await loadApplicationsForJob(jobId, userData.email, selectedJob);
-        setApplications(apps);
-        await loadProfilesForApplications(apps);
+        const normalizedApps = apps.map(normalizeApplication);
+        setApplications(normalizedApps);
+        await loadProfilesForApplications(normalizedApps);
       } else {
         // Load all applications for employer
         const apps = await loadApplicationsForEmployer(userData.email);
-        setApplications(apps);
-        await loadProfilesForApplications(apps);
+        const normalizedApps = apps.map(normalizeApplication);
+        setApplications(normalizedApps);
+        await loadProfilesForApplications(normalizedApps);
       }
     } catch (error) {
       console.error('Error loading applications:', error);
@@ -185,6 +204,8 @@ export default function Applications() {
   };
 
   const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    if (!dateString || Number.isNaN(date.getTime())) return 'Recently';
     return new Date(dateString).toLocaleDateString('en-IN', {
       day: 'numeric',
       month: 'short',
@@ -284,7 +305,7 @@ export default function Applications() {
                         </Avatar>
                         <div>
                           <h3 className="font-bold text-gray-900">{app.candidate_name}</h3>
-                          <p className="text-gray-600 text-sm">{app.candidate_email}</p>
+                          <p className="text-gray-600 text-sm">{app.candidate_email || 'Email not provided'}</p>
                           <p className="text-gray-400 text-xs mt-1">
                             Applied {formatDate(app.created_at)}
                           </p>
@@ -347,6 +368,9 @@ export default function Applications() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Application Details</DialogTitle>
+            <DialogDescription>
+              View candidate contact details and update application status.
+            </DialogDescription>
           </DialogHeader>
 
           {selectedApplication && (
@@ -389,14 +413,21 @@ export default function Applications() {
               <div>
                 <p className="text-sm text-gray-500 mb-2">Contact Information</p>
                 <div className="space-y-2">
-                  <a 
-                    href={`mailto:${selectedApplication.candidate_email}`}
-                    className="flex items-center gap-2 text-[#3aafc4] hover:underline"
-                  >
-                    <Mail className="w-4 h-4" />
-                    {selectedApplication.candidate_email}
-                  </a>
-                  {candidateProfiles[selectedApplication.candidate_email]?.phone && (
+                  {selectedApplication.candidate_email ? (
+                    <a 
+                      href={`mailto:${selectedApplication.candidate_email}`}
+                      className="flex items-center gap-2 text-[#3aafc4] hover:underline"
+                    >
+                      <Mail className="w-4 h-4" />
+                      {selectedApplication.candidate_email}
+                    </a>
+                  ) : (
+                    <p className="flex items-center gap-2 text-gray-500">
+                      <Mail className="w-4 h-4" />
+                      Email not available
+                    </p>
+                  )}
+                  {candidateProfiles[selectedApplication.candidate_email]?.phone ? (
                     <a 
                       href={`tel:${candidateProfiles[selectedApplication.candidate_email].phone}`}
                       className="flex items-center gap-2 text-[#3aafc4] hover:underline"
@@ -404,6 +435,11 @@ export default function Applications() {
                       <Phone className="w-4 h-4" />
                       {candidateProfiles[selectedApplication.candidate_email].phone}
                     </a>
+                  ) : (
+                    <p className="flex items-center gap-2 text-gray-500">
+                      <Phone className="w-4 h-4" />
+                      Contact number not available
+                    </p>
                   )}
                 </div>
               </div>
