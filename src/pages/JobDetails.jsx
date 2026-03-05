@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/working-toast';
 import {
   Dialog,
@@ -45,6 +46,7 @@ export default function JobDetails() {
   const [applying, setApplying] = useState(false);
   const [showApplyDialog, setShowApplyDialog] = useState(false);
   const [coverLetter, setCoverLetter] = useState('');
+  const [applicationPhone, setApplicationPhone] = useState('');
   const [resumeFile, setResumeFile] = useState(null);
   const [resumeFileName, setResumeFileName] = useState('');
   const [uploadingResume, setUploadingResume] = useState(false);
@@ -53,6 +55,12 @@ export default function JobDetails() {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (showApplyDialog) {
+      setApplicationPhone(profile?.phone || '');
+    }
+  }, [showApplyDialog, profile?.phone]);
 
   const loadData = async () => {
     try {
@@ -170,6 +178,17 @@ export default function JobDetails() {
 
     setApplying(true);
     try {
+      const resolvedPhone = (applicationPhone || profile?.phone || '').trim();
+      if (!resolvedPhone) {
+        toast({
+          variant: 'destructive',
+          title: 'Phone number required',
+          description: 'Please add your contact number before submitting application.',
+        });
+        setApplying(false);
+        return;
+      }
+
       const applicationPayload = {
         job_id: job.id,
         candidate_email: user.email,
@@ -182,9 +201,7 @@ export default function JobDetails() {
       if (user?.full_name || user?.email) {
         applicationPayload.candidate_name = user.full_name || user.email;
       }
-      if (profile?.phone) {
-        applicationPayload.candidate_phone = profile.phone;
-      }
+      applicationPayload.candidate_phone = resolvedPhone;
       if (resumeFile || profile?.resume_url) {
         applicationPayload.resume_url = resumeFile || profile?.resume_url || '';
       }
@@ -463,6 +480,21 @@ export default function JobDetails() {
                 onChange={(e) => setCoverLetter(e.target.value)}
                 className="mt-2 min-h-[120px]"
               />
+            </div>
+
+            {/* Contact Phone */}
+            <div>
+              <Label className="text-gray-700 font-medium">Contact Number</Label>
+              <Input
+                type="tel"
+                placeholder="e.g. +91 98765 43210"
+                value={applicationPhone}
+                onChange={(e) => setApplicationPhone(e.target.value)}
+                className="mt-2"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                This will be shared with the employer along with your application.
+              </p>
             </div>
 
             <Button 
