@@ -414,7 +414,7 @@ export default function Jobs() {
                         job={job}
                         isSaved={savedJobs.includes(String(job.id))}
                         hasApplied={applications.includes(job.id)}
-                        onSave={!isEmployer ? handleSaveJob : undefined}
+                        onSave={handleSaveJob}
                         onApply={!isEmployer ? handleApply : undefined}
                         onClick={() => window.location.href = createPageUrl('JobDetails') + `?id=${job.id}`}
                       />

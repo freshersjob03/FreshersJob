@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/working-toast';
 import { 
   Home, 
   Briefcase, 
@@ -12,6 +12,7 @@ import {
   LogOut, 
   PlusCircle,
   FileText,
+  RefreshCw,
   Menu,
   X
 } from 'lucide-react';
@@ -33,16 +34,6 @@ export default function Navbar({ user, profile, onLogout, isAuthenticated }) {
   const isEmployer = profile?.role === 'employer';
 
   const promptSwitchAccount = async (mode) => {
-    toast({
-      title: 'Already logged in',
-      description: 'You are already logged in to your account. Switch account if you want to continue with another email.',
-    });
-
-    const confirmSwitch = window.confirm(
-      'You are already logged in. Continue with another account? This will log out your current account.'
-    );
-    if (!confirmSwitch) return;
-
     if (clerk?.signOut) {
       await clerk.signOut();
     }
@@ -51,6 +42,10 @@ export default function Navbar({ user, profile, onLogout, isAuthenticated }) {
       clerk.openSignUp({ redirectUrl: createPageUrl('Feed') });
       return;
     }
+    toast({
+      title: 'Switch account',
+      description: 'Choose the account you want to continue with.',
+    });
     navigateToLogin(createPageUrl('Feed'));
   };
 
@@ -90,15 +85,15 @@ export default function Navbar({ user, profile, onLogout, isAuthenticated }) {
         <Briefcase className="w-5 h-5" />
         <span className="hidden lg:inline">Jobs</span>
       </Link>
+      <Link 
+        to={createPageUrl('SavedJobs')}
+        className="flex items-center gap-2 px-3 py-2 text-[#4a4d55] hover:text-[#4f9497] font-medium transition-colors"
+      >
+        <Bookmark className="w-5 h-5" />
+        <span className="hidden lg:inline">Saved</span>
+      </Link>
       {!isEmployer && (
         <>
-          <Link 
-            to={createPageUrl('SavedJobs')}
-            className="flex items-center gap-2 px-3 py-2 text-[#4a4d55] hover:text-[#4f9497] font-medium transition-colors"
-          >
-            <Bookmark className="w-5 h-5" />
-            <span className="hidden lg:inline">Saved</span>
-          </Link>
           <Link 
             to={createPageUrl('MyApplications')}
             className="flex items-center gap-2 px-3 py-2 text-[#4a4d55] hover:text-[#4f9497] font-medium transition-colors"
@@ -174,6 +169,10 @@ export default function Navbar({ user, profile, onLogout, isAuthenticated }) {
                         <User className="w-4 h-4 mr-2" />
                         My Profile
                       </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => promptSwitchAccount('login')} className="cursor-pointer">
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Switch Account
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={onLogout} className="text-red-600 cursor-pointer">

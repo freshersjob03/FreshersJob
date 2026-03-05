@@ -318,32 +318,30 @@ export default function JobDetails() {
                     <p className="text-lg text-gray-600 mt-1">{job.company_name}</p>
                   </div>
                   
-                  {!isEmployer && (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={handleSave}
-                        className="h-10 w-10"
-                      >
-                        {isSaved ? (
-                          <BookmarkCheck className="w-5 h-5 text-[#3aafc4]" />
-                        ) : (
-                          <Bookmark className="w-5 h-5" />
-                        )}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-10 w-10"
-                        onClick={() => {
-                          navigator.clipboard.writeText(window.location.href);
-                        }}
-                      >
-                        <Share2 className="w-5 h-5" />
-                      </Button>
-                    </div>
-                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleSave}
+                      className="h-10 w-10"
+                    >
+                      {isSaved ? (
+                        <BookmarkCheck className="w-5 h-5 text-[#3aafc4]" />
+                      ) : (
+                        <Bookmark className="w-5 h-5" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10"
+                      onClick={() => {
+                        navigator.clipboard.writeText(window.location.href);
+                      }}
+                    >
+                      <Share2 className="w-5 h-5" />
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Meta Info */}
