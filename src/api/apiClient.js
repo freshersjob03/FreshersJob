@@ -377,25 +377,44 @@ export const api = {
       filter: async (filterObj = {}, order) => {
         return withTableFallback(['applications', 'application', 'Application'], async (tableName) => {
           const runFilter = async (filters) => {
-            let query = supabase.from(tableName).select('*');
-            if (Object.keys(filters).length) {
-              query = query.match(filters);
-            }
-            query = applyOrder(query, order);
-            const { data, error } = await query;
-            if (error) throw error;
-            return data || [];
+            const buildQuery = (orderValue) => {
+              let query = supabase.from(tableName).select('*');
+              if (Object.keys(filters).length) {
+                query = query.match(filters);
+              }
+              return applyOrder(query, orderValue);
+            };
+            return runWithOrderFallback(buildQuery, order);
           };
 
-          try {
-            return await runFilter(filterObj);
-          } catch (error) {
-            if (filterObj?.candidate_email && isMissingColumnError(error, 'applications.candidate_email')) {
-              const { candidate_email, ...rest } = filterObj;
-              return runFilter({ ...rest, candidate_id: candidate_email });
+          let filters = { ...filterObj };
+          const maxAttempts = Math.max(8, Object.keys(filters).length + 3);
+
+          for (let i = 0; i < maxAttempts; i += 1) {
+            try {
+              return await runFilter(filters);
+            } catch (error) {
+              // Handle legacy schema where candidate_id exists but candidate_email doesn't.
+              if (filters?.candidate_email && isMissingColumnError(error, 'applications.candidate_email')) {
+                const { candidate_email, ...rest } = filters;
+                filters = { ...rest, candidate_id: candidate_email };
+                continue;
+              }
+
+              // Generic fallback: if any filter column is missing, remove it and retry.
+              const missingCol = getMissingColumnName(error);
+              if (missingCol && missingCol in filters) {
+                const next = { ...filters };
+                delete next[missingCol];
+                filters = next;
+                continue;
+              }
+
+              throw error;
             }
-            throw error;
           }
+
+          return runFilter(filters);
         });
       },
       create: async (obj) => {
