@@ -62,10 +62,27 @@ export default function Applications() {
   const normalizeApplication = (app) => ({
     ...app,
     candidate_email: resolveCandidateEmail(app),
-    candidate_name: app?.candidate_name || app?.name || 'Candidate',
+    candidate_name: app?.candidate_name || app?.name || '',
     candidate_phone: app?.candidate_phone || app?.phone || null,
     created_at: app?.created_at || app?.applied_at || app?.updated_at || null,
   });
+
+  const getCandidateDisplayName = (app) => {
+    const profile = candidateProfiles[app?.candidate_email];
+    return (
+      app?.candidate_name ||
+      profile?.full_name ||
+      profile?.name ||
+      profile?.headline ||
+      (app?.candidate_email ? app.candidate_email.split('@')[0] : '') ||
+      'Candidate'
+    );
+  };
+
+  const getCandidateResumeUrl = (app) => {
+    const profile = candidateProfiles[app?.candidate_email];
+    return app?.resume_url || profile?.resume_url || null;
+  };
 
   const loadProfilesForApplications = async (apps) => {
     const profiles = {};
@@ -284,6 +301,7 @@ export default function Applications() {
               const statusConfig = getStatusConfig(app.status);
               const StatusIcon = statusConfig.icon;
               const profile = candidateProfiles[app.candidate_email];
+              const displayName = getCandidateDisplayName(app);
 
               return (
                 <motion.div
@@ -301,11 +319,11 @@ export default function Applications() {
                         <Avatar className="w-12 h-12">
                           <AvatarImage src={profile?.profile_photo} />
                           <AvatarFallback className="bg-[#3aafc4]/10 text-[#3aafc4] font-bold">
-                            {app.candidate_name?.charAt(0) || 'C'}
+                            {displayName?.charAt(0)?.toUpperCase() || 'C'}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <h3 className="font-bold text-gray-900">{app.candidate_name}</h3>
+                          <h3 className="font-bold text-gray-900">{displayName}</h3>
                           <p className="text-gray-600 text-sm">{app.candidate_email || 'Email not provided'}</p>
                           <p className="text-gray-400 text-xs mt-1">
                             Applied {formatDate(app.created_at)}
@@ -376,16 +394,21 @@ export default function Applications() {
 
           {selectedApplication && (
             <div className="space-y-6 py-4">
+              {(() => {
+                const displayName = getCandidateDisplayName(selectedApplication);
+                const resumeUrl = getCandidateResumeUrl(selectedApplication);
+                return (
+                  <>
               {/* Candidate Info */}
               <div className="flex items-center gap-4">
                 <Avatar className="w-16 h-16">
                   <AvatarImage src={candidateProfiles[selectedApplication.candidate_email]?.profile_photo} />
                   <AvatarFallback className="bg-[#3aafc4]/10 text-[#3aafc4] font-bold text-xl">
-                    {selectedApplication.candidate_name?.charAt(0)}
+                    {displayName?.charAt(0)?.toUpperCase() || 'C'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">{selectedApplication.candidate_name}</h3>
+                  <h3 className="text-xl font-bold text-gray-900">{displayName}</h3>
                   <p className="text-gray-600">{candidateProfiles[selectedApplication.candidate_email]?.headline || 'Fresher'}</p>
                 </div>
               </div>
@@ -446,11 +469,11 @@ export default function Applications() {
               </div>
 
               {/* Resume */}
-              {selectedApplication.resume_url && (
+              {resumeUrl && (
                 <div>
                   <p className="text-sm text-gray-500 mb-2">Resume</p>
                   <a 
-                    href={selectedApplication.resume_url}
+                    href={resumeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
@@ -492,6 +515,9 @@ export default function Applications() {
                   Applied on {formatDate(selectedApplication.created_at)}
                 </p>
               </div>
+                  </>
+                );
+              })()}
             </div>
           )}
         </DialogContent>
