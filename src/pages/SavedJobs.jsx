@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function SavedJobs() {
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [savedJobs, setSavedJobs] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -21,6 +22,10 @@ export default function SavedJobs() {
     try {
       const userData = await api.auth.me();
       setUser(userData);
+      const profiles = await api.entities.UserProfile.filter({ created_by: userData.email });
+      if (profiles.length > 0) {
+        setProfile(profiles[0]);
+      }
 
       const saved = await api.entities.SavedJob.filter({ user_email: userData.email, user_id: userData.id });
       setSavedJobs(saved);
@@ -58,6 +63,8 @@ export default function SavedJobs() {
     window.location.href = createPageUrl('JobDetails') + `?id=${job.id}`;
   };
 
+  const isEmployer = profile?.role === 'employer';
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -93,7 +100,7 @@ export default function SavedJobs() {
                     isSaved={true}
                     hasApplied={applications.includes(job.id)}
                     onSave={handleRemoveSaved}
-                    onApply={handleApply}
+                    onApply={!isEmployer ? handleApply : undefined}
                     onClick={() => window.location.href = createPageUrl('JobDetails') + `?id=${job.id}`}
                   />
                 </motion.div>
