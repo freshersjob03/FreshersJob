@@ -5,10 +5,19 @@
 import { supabase } from './supabaseClient';
 
 // small helper to apply order strings like '-created_date' or 'name'
+function normalizeOrder(order) {
+  if (!order) return order;
+  const descending = order.startsWith('-');
+  const col = descending ? order.slice(1) : order;
+  const normalizedCol = col === 'created_date' ? 'created_at' : col;
+  return descending ? `-${normalizedCol}` : normalizedCol;
+}
+
 function applyOrder(query, order) {
-  if (!order) return query;
-  const ascending = !order.startsWith('-');
-  const col = ascending ? order : order.slice(1);
+  const normalized = normalizeOrder(order);
+  if (!normalized) return query;
+  const ascending = !normalized.startsWith('-');
+  const col = ascending ? normalized : normalized.slice(1);
   return query.order(col, { ascending });
 }
 
@@ -65,19 +74,20 @@ function isUnsupportedMimeTypeError(error) {
   return msg.includes('mime type') && msg.includes('not supported');
 }
 
+function canUseLocalBackend() {
+  if (typeof window === 'undefined') return false;
+  const host = String(window.location?.hostname || '').toLowerCase();
+  return host === 'localhost' || host === '127.0.0.1';
+}
+
 async function runWithOrderFallback(buildQuery, order) {
-  let query = buildQuery(order);
+  const normalized = normalizeOrder(order);
+  let query = buildQuery(normalized);
   let { data, error } = await query;
   if (!error) return data || [];
 
-  const orderCol = order ? (order.startsWith('-') ? order.slice(1) : order) : null;
+  const orderCol = normalized ? (normalized.startsWith('-') ? normalized.slice(1) : normalized) : null;
   if (orderCol && isMissingColumnError(error, orderCol)) {
-    if (orderCol === 'created_at') {
-      const fallbackOrder = order.startsWith('-') ? '-created_at' : 'created_at';
-      query = buildQuery(fallbackOrder);
-      ({ data, error } = await query);
-      if (!error) return data || [];
-    }
     query = buildQuery(null);
     ({ data, error } = await query);
     if (!error) return data || [];
@@ -165,7 +175,7 @@ export const api = {
   entities: {
     UserProfile: {
       filter: async (filterObj = {}) => {
-        return withTableFallback(['userprofile', 'UserProfile'], async (tableName) => {
+        return withTableFallback(['UserProfile', 'userprofile'], async (tableName) => {
           let query = supabase.from(tableName).select('*');
           if (Object.keys(filterObj).length) {
             query = query.match(filterObj);
@@ -176,21 +186,21 @@ export const api = {
         });
       },
       create: async (obj) => {
-        return withTableFallback(['userprofile', 'UserProfile'], async (tableName) => {
+        return withTableFallback(['UserProfile', 'userprofile'], async (tableName) => {
           const { data, error } = await supabase.from(tableName).insert(obj).select().single();
           if (error) throw error;
           return data;
         });
       },
       update: async (id, obj) => {
-        return withTableFallback(['userprofile', 'UserProfile'], async (tableName) => {
+        return withTableFallback(['UserProfile', 'userprofile'], async (tableName) => {
           const { data, error } = await supabase.from(tableName).update(obj).eq('id', id).select().single();
           if (error) throw error;
           return data;
         });
       },
       delete: async (id) => {
-        return withTableFallback(['userprofile', 'UserProfile'], async (tableName) => {
+        return withTableFallback(['UserProfile', 'userprofile'], async (tableName) => {
           const { error } = await supabase.from(tableName).delete().eq('id', id);
           if (error) throw error;
         });
@@ -198,7 +208,9 @@ export const api = {
     },
     Job: {
       filter: async (filterObj = {}, order) => {
+        const normalizedOrder = normalizeOrder(order);
         try {
+          if (!canUseLocalBackend()) throw new Error('Local backend disabled');
           const params = new URLSearchParams();
           
           // Add filter parameters
@@ -207,8 +219,8 @@ export const api = {
           });
           
           // Add order parameter
-          if (order) {
-            params.append('order', order);
+          if (normalizedOrder) {
+            params.append('order', normalizedOrder);
           }
           
           const response = await fetch(`http://localhost:5000/api/jobs?${params}`);
@@ -217,15 +229,29 @@ export const api = {
           const jobs = await response.json();
           return Array.isArray(jobs) ? jobs : jobs.data || [];
         } catch (error) {
-          console.error('Job fetch error:', error);
-          throw error;
+          try {
+            const loadFromSupabase = async (fallbackOrder) => {
+              let query = supabase.from('jobs').select('*');
+              if (Object.keys(filterObj).length) {
+                query = query.match(filterObj);
+              }
+              query = applyOrder(query, fallbackOrder);
+              return query;
+            };
+            return await runWithOrderFallback(loadFromSupabase, normalizedOrder);
+          } catch (fallbackError) {
+            console.error('Job fetch error:', error);
+            throw fallbackError;
+          }
         }
       },
       list: async (order, limit) => {
+        const normalizedOrder = normalizeOrder(order);
         try {
+          if (!canUseLocalBackend()) throw new Error('Local backend disabled');
           const params = new URLSearchParams();
           
-          if (order) params.append('order', order);
+          if (normalizedOrder) params.append('order', normalizedOrder);
           if (limit) params.append('limit', limit);
           
           const response = await fetch(`http://localhost:5000/api/jobs?${params}`);
@@ -234,8 +260,18 @@ export const api = {
           const jobs = await response.json();
           return Array.isArray(jobs) ? jobs : jobs.data || [];
         } catch (error) {
-          console.error('Job list error:', error);
-          throw error;
+          try {
+            const loadFromSupabase = async (fallbackOrder) => {
+              let query = supabase.from('jobs').select('*');
+              query = applyOrder(query, fallbackOrder);
+              if (limit) query = query.limit(Number(limit));
+              return query;
+            };
+            return await runWithOrderFallback(loadFromSupabase, normalizedOrder);
+          } catch (fallbackError) {
+            console.error('Job list error:', error);
+            throw fallbackError;
+          }
         }
       },
       create: async (obj) => {
@@ -246,6 +282,7 @@ export const api = {
         };
 
         try {
+          if (!canUseLocalBackend()) throw new Error('Local backend disabled');
           const response = await fetch('http://localhost:5000/api/jobs', {
             method: 'POST',
             headers: {
@@ -279,6 +316,7 @@ export const api = {
       },
       update: async (id, obj) => {
         try {
+          if (!canUseLocalBackend()) throw new Error('Local backend disabled');
           const response = await fetch(`http://localhost:5000/api/jobs/${id}`, {
             method: 'PUT',
             headers: {
@@ -295,12 +333,24 @@ export const api = {
           const result = await response.json();
           return result.job || result;
         } catch (error) {
-          console.error('Job update error:', error);
-          throw error;
+          try {
+            const { data, error: updateError } = await supabase
+              .from('jobs')
+              .update(obj || {})
+              .eq('id', id)
+              .select()
+              .single();
+            if (updateError) throw updateError;
+            return data;
+          } catch (fallbackError) {
+            console.error('Job update error:', error);
+            throw fallbackError;
+          }
         }
       },
       delete: async (id) => {
         try {
+          if (!canUseLocalBackend()) throw new Error('Local backend disabled');
           const response = await fetch(`http://localhost:5000/api/jobs/${id}`, {
             method: 'DELETE',
           });
@@ -312,8 +362,14 @@ export const api = {
           
           return true;
         } catch (error) {
-          console.error('Job delete error:', error);
-          throw error;
+          try {
+            const { error: deleteError } = await supabase.from('jobs').delete().eq('id', id);
+            if (deleteError) throw deleteError;
+            return true;
+          } catch (fallbackError) {
+            console.error('Job delete error:', error);
+            throw fallbackError;
+          }
         }
       }
     },
