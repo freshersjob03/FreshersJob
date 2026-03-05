@@ -170,27 +170,51 @@ export default function JobDetails() {
 
     setApplying(true);
     try {
-      await api.entities.Application.create({
+      const applicationPayload = {
         job_id: job.id,
         candidate_email: user.email,
-        candidate_name: user.full_name || user.email,
-        resume_url: resumeFile || profile?.resume_url || '',
-        cover_letter: coverLetter,
         status: 'pending',
-        employer_id: job.employer_id,
-        job_title: job.title,
-        company_name: job.company_name
-      });
+      };
+
+      // Include optional fields only when we actually have values.
+      // This reduces schema-mismatch retries on projects with minimal tables.
+      if (user?.id) applicationPayload.candidate_id = user.id;
+      if (user?.full_name || user?.email) {
+        applicationPayload.candidate_name = user.full_name || user.email;
+      }
+      if (resumeFile || profile?.resume_url) {
+        applicationPayload.resume_url = resumeFile || profile?.resume_url || '';
+      }
+      if (coverLetter?.trim()) applicationPayload.cover_letter = coverLetter.trim();
+      if (job?.employer_id) applicationPayload.employer_id = job.employer_id;
+      if (job?.title) applicationPayload.job_title = job.title;
+      if (job?.company_name) applicationPayload.company_name = job.company_name;
+
+      await api.entities.Application.create(applicationPayload);
 
       // Update applications count
-      await api.entities.Job.update(job.id, {
-        applications_count: (job.applications_count || 0) + 1
-      });
+      try {
+        await api.entities.Job.update(job.id, {
+          applications_count: (job.applications_count || 0) + 1
+        });
+      } catch (updateError) {
+        // Some schemas do not have applications_count; application is already created.
+        console.warn('Skipped applications_count update:', updateError?.message || updateError);
+      }
 
       setHasApplied(true);
       setShowApplyDialog(false);
+      toast({
+        title: 'Application submitted',
+        description: 'Your application has been sent successfully.',
+      });
     } catch (error) {
       console.error('Error applying:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Application failed',
+        description: error?.message || 'Could not submit application.',
+      });
     } finally {
       setApplying(false);
     }

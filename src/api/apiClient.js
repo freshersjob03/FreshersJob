@@ -240,7 +240,7 @@ export const api = {
             };
             return await runWithOrderFallback(loadFromSupabase, normalizedOrder);
           } catch (fallbackError) {
-            console.error('Job fetch error:', error);
+            console.error('Job fetch error:', fallbackError);
             throw fallbackError;
           }
         }
@@ -269,7 +269,7 @@ export const api = {
             };
             return await runWithOrderFallback(loadFromSupabase, normalizedOrder);
           } catch (fallbackError) {
-            console.error('Job list error:', error);
+            console.error('Job list error:', fallbackError);
             throw fallbackError;
           }
         }
@@ -309,7 +309,7 @@ export const api = {
             if (insertError) throw insertError;
             return data;
           } catch (fallbackError) {
-            console.error('Job create error:', error);
+            console.error('Job create error:', fallbackError);
             throw fallbackError;
           }
         }
@@ -343,7 +343,7 @@ export const api = {
             if (updateError) throw updateError;
             return data;
           } catch (fallbackError) {
-            console.error('Job update error:', error);
+            console.error('Job update error:', fallbackError);
             throw fallbackError;
           }
         }
@@ -367,7 +367,7 @@ export const api = {
             if (deleteError) throw deleteError;
             return true;
           } catch (fallbackError) {
-            console.error('Job delete error:', error);
+            console.error('Job delete error:', fallbackError);
             throw fallbackError;
           }
         }
