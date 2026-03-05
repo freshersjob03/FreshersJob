@@ -63,6 +63,7 @@ export default function Applications() {
     ...app,
     candidate_email: resolveCandidateEmail(app),
     candidate_name: app?.candidate_name || app?.name || 'Candidate',
+    candidate_phone: app?.candidate_phone || app?.phone || null,
     created_at: app?.created_at || app?.applied_at || app?.updated_at || null,
   });
 
@@ -427,13 +428,13 @@ export default function Applications() {
                       Email not available
                     </p>
                   )}
-                  {candidateProfiles[selectedApplication.candidate_email]?.phone ? (
+                  {(candidateProfiles[selectedApplication.candidate_email]?.phone || selectedApplication.candidate_phone) ? (
                     <a 
-                      href={`tel:${candidateProfiles[selectedApplication.candidate_email].phone}`}
+                      href={`tel:${candidateProfiles[selectedApplication.candidate_email]?.phone || selectedApplication.candidate_phone}`}
                       className="flex items-center gap-2 text-[#3aafc4] hover:underline"
                     >
                       <Phone className="w-4 h-4" />
-                      {candidateProfiles[selectedApplication.candidate_email].phone}
+                      {candidateProfiles[selectedApplication.candidate_email]?.phone || selectedApplication.candidate_phone}
                     </a>
                   ) : (
                     <p className="flex items-center gap-2 text-gray-500">

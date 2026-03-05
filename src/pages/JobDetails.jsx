@@ -182,6 +182,9 @@ export default function JobDetails() {
       if (user?.full_name || user?.email) {
         applicationPayload.candidate_name = user.full_name || user.email;
       }
+      if (profile?.phone) {
+        applicationPayload.candidate_phone = profile.phone;
+      }
       if (resumeFile || profile?.resume_url) {
         applicationPayload.resume_url = resumeFile || profile?.resume_url || '';
       }
