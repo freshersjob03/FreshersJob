@@ -33,14 +33,6 @@ function getFileExt(name) {
   return idx > -1 ? name.slice(idx + 1).toLowerCase() : 'bin';
 }
 
-function isMissingTableError(error) {
-  const msg = String(error?.message || '').toLowerCase();
-  return (
-    msg.includes('could not find the table') ||
-    (msg.includes('relation') && msg.includes('does not exist'))
-  );
-}
-
 function isMissingColumnError(error, columnName) {
   const msg = String(error?.message || '').toLowerCase();
   const full = String(columnName).toLowerCase();
@@ -50,18 +42,6 @@ function isMissingColumnError(error, columnName) {
     (msg.includes('column') && msg.includes(short) && msg.includes('does not exist')) ||
     (msg.includes('could not find the') && msg.includes('column') && msg.includes(short))
   );
-}
-
-function getMissingColumnName(error) {
-  const msg = String(error?.message || '').toLowerCase();
-  const matchA = msg.match(/column\s+["']?([a-z0-9_.]+)["']?\s+(does not exist|was not found)/i);
-  const matchB = msg.match(/could not find the\s+["']?([a-z0-9_.]+)["']?\s+column/i);
-  const raw = matchA?.[1] || matchB?.[1] || null;
-  if (raw) {
-    const col = raw.toLowerCase();
-    return col.includes('.') ? col.split('.').pop() : col;
-  }
-  return null;
 }
 
 function isMissingBucketError(error) {
@@ -94,23 +74,6 @@ async function runWithOrderFallback(buildQuery, order) {
   }
 
   throw error;
-}
-
-async function withTableFallback(tableNames, op) {
-  let lastMissingError = null;
-  for (const tableName of tableNames) {
-    try {
-      return await op(tableName);
-    } catch (error) {
-      if (isMissingTableError(error)) {
-        lastMissingError = error;
-        continue;
-      }
-      throw error;
-    }
-  }
-  if (lastMissingError) throw lastMissingError;
-  throw new Error('No table names configured for fallback');
 }
 
 export const api = {
@@ -175,35 +138,27 @@ export const api = {
   entities: {
     UserProfile: {
       filter: async (filterObj = {}) => {
-        return withTableFallback(['UserProfile', 'userprofile'], async (tableName) => {
-          let query = supabase.from(tableName).select('*');
-          if (Object.keys(filterObj).length) {
-            query = query.match(filterObj);
-          }
-          const { data, error } = await query;
-          if (error) throw error;
-          return data || [];
-        });
+        let query = supabase.from('UserProfile').select('*');
+        if (Object.keys(filterObj).length) {
+          query = query.match(filterObj);
+        }
+        const { data, error } = await query;
+        if (error) throw error;
+        return data || [];
       },
       create: async (obj) => {
-        return withTableFallback(['UserProfile', 'userprofile'], async (tableName) => {
-          const { data, error } = await supabase.from(tableName).insert(obj).select().single();
-          if (error) throw error;
-          return data;
-        });
+        const { data, error } = await supabase.from('UserProfile').insert(obj).select().single();
+        if (error) throw error;
+        return data;
       },
       update: async (id, obj) => {
-        return withTableFallback(['UserProfile', 'userprofile'], async (tableName) => {
-          const { data, error } = await supabase.from(tableName).update(obj).eq('id', id).select().single();
-          if (error) throw error;
-          return data;
-        });
+        const { data, error } = await supabase.from('UserProfile').update(obj).eq('id', id).select().single();
+        if (error) throw error;
+        return data;
       },
       delete: async (id) => {
-        return withTableFallback(['UserProfile', 'userprofile'], async (tableName) => {
-          const { error } = await supabase.from(tableName).delete().eq('id', id);
-          if (error) throw error;
-        });
+        const { error } = await supabase.from('UserProfile').delete().eq('id', id);
+        if (error) throw error;
       },
     },
     Job: {
@@ -375,172 +330,48 @@ export const api = {
     },
     Application: {
       filter: async (filterObj = {}, order) => {
-        return withTableFallback(['applications', 'application', 'Application'], async (tableName) => {
-          const runFilter = async (filters) => {
-            const buildQuery = (orderValue) => {
-              let query = supabase.from(tableName).select('*');
-              if (Object.keys(filters).length) {
-                query = query.match(filters);
-              }
-              return applyOrder(query, orderValue);
-            };
-            return runWithOrderFallback(buildQuery, order);
-          };
-
-          let filters = { ...filterObj };
-          const maxAttempts = Math.max(8, Object.keys(filters).length + 3);
-
-          for (let i = 0; i < maxAttempts; i += 1) {
-            try {
-              return await runFilter(filters);
-            } catch (error) {
-              // Handle legacy schema where candidate_id exists but candidate_email doesn't.
-              if (filters?.candidate_email && isMissingColumnError(error, 'applications.candidate_email')) {
-                const { candidate_email, ...rest } = filters;
-                filters = { ...rest, candidate_id: candidate_email };
-                continue;
-              }
-
-              // Generic fallback: if any filter column is missing, remove it and retry.
-              const missingCol = getMissingColumnName(error);
-              if (missingCol && missingCol in filters) {
-                const next = { ...filters };
-                delete next[missingCol];
-                filters = next;
-                continue;
-              }
-
-              throw error;
-            }
+        const buildQuery = (orderValue) => {
+          let query = supabase.from('applications').select('*');
+          if (Object.keys(filterObj).length) {
+            query = query.match(filterObj);
           }
-
-          return runFilter(filters);
-        });
+          return applyOrder(query, orderValue);
+        };
+        return runWithOrderFallback(buildQuery, order);
       },
       create: async (obj) => {
-        return withTableFallback(['applications', 'application', 'Application'], async (tableName) => {
-          const runCreate = async (payload) => {
-            const { data, error } = await supabase.from(tableName).insert(payload).select().single();
-            if (error) throw error;
-            return data;
-          };
-
-          let payload = { ...obj };
-          try {
-            return await runCreate(payload);
-          } catch (error) {
-            if (payload?.candidate_email && isMissingColumnError(error, 'applications.candidate_email')) {
-              const { candidate_email, ...rest } = payload;
-              payload = { ...rest, candidate_id: candidate_email };
-            } else {
-              throw error;
-            }
-          }
-
-          // Retry by removing extra fields unknown to this schema.
-          // Some projects keep a minimal applications table, so we may need
-          // to remove multiple optional fields one-by-one.
-          const maxAttempts = Math.max(8, Object.keys(payload).length + 2);
-          for (let i = 0; i < maxAttempts; i += 1) {
-            try {
-              return await runCreate(payload);
-            } catch (retryError) {
-              const missingCol = getMissingColumnName(retryError);
-              if (!missingCol || !(missingCol in payload)) {
-                throw retryError;
-              }
-              const next = { ...payload };
-              delete next[missingCol];
-              payload = next;
-            }
-          }
-
-          return runCreate(payload);
-        });
+        const { data, error } = await supabase.from('applications').insert(obj).select().single();
+        if (error) throw error;
+        return data;
       },
       update: async (id, obj) => {
-        return withTableFallback(['applications', 'application', 'Application'], async (tableName) => {
-          const { data, error } = await supabase.from(tableName).update(obj).eq('id', id).select().single();
-          if (error) throw error;
-          return data;
-        });
+        const { data, error } = await supabase.from('applications').update(obj).eq('id', id).select().single();
+        if (error) throw error;
+        return data;
       },
       delete: async (id) => {
-        return withTableFallback(['applications', 'application', 'Application'], async (tableName) => {
-          const { error } = await supabase.from(tableName).delete().eq('id', id);
-          if (error) throw error;
-        });
+        const { error } = await supabase.from('applications').delete().eq('id', id);
+        if (error) throw error;
       }
     },
     SavedJob: {
       filter: async (filterObj = {}) => {
-        return withTableFallback(['saved_jobs', 'savedjob', 'SavedJob'], async (tableName) => {
-          const runFilter = async (filters) => {
-            let query = supabase.from(tableName).select('*');
-            if (Object.keys(filters).length) {
-              query = query.match(filters);
-            }
-            const { data, error } = await query;
-            if (error) throw error;
-            return data || [];
-          };
-
-          try {
-            const direct = await runFilter(filterObj);
-            if (direct.length > 0) return direct;
-
-            // If both identifiers are present, try each one individually as fallback.
-            if (filterObj?.user_email && filterObj?.user_id) {
-              const { user_id, ...emailOnly } = filterObj;
-              const emailRows = await runFilter(emailOnly);
-              if (emailRows.length > 0) return emailRows;
-
-              const { user_email, ...idOnlyRest } = filterObj;
-              return runFilter({ ...idOnlyRest, user_id });
-            }
-
-            return direct;
-          } catch (error) {
-            if (filterObj?.user_email && isMissingColumnError(error, 'saved_jobs.user_email')) {
-              const { user_email, ...rest } = filterObj;
-              return runFilter({ ...rest, user_id: filterObj?.user_id || user_email });
-            }
-            if (filterObj?.user_id && isMissingColumnError(error, 'saved_jobs.user_id')) {
-              const { user_id, ...rest } = filterObj;
-              return runFilter(rest);
-            }
-            throw error;
-          }
-        });
+        let query = supabase.from('saved_jobs').select('*');
+        if (Object.keys(filterObj).length) {
+          query = query.match(filterObj);
+        }
+        const { data, error } = await query;
+        if (error) throw error;
+        return data || [];
       },
       create: async (obj) => {
-        return withTableFallback(['saved_jobs', 'savedjob', 'SavedJob'], async (tableName) => {
-          const runCreate = async (payload) => {
-            const { data, error } = await supabase.from(tableName).insert(payload).select().single();
-            if (error) throw error;
-            return data;
-          };
-
-          try {
-            return await runCreate(obj);
-          } catch (error) {
-            if (obj?.user_email && isMissingColumnError(error, 'saved_jobs.user_email')) {
-              const { user_email, ...rest } = obj;
-              return runCreate({ ...rest, user_id: obj?.user_id || user_email });
-            }
-            if (obj?.user_id && isMissingColumnError(error, 'saved_jobs.user_id')) {
-              const { user_id, ...rest } = obj;
-              return runCreate(rest);
-            }
-            throw error;
-          }
-        });
+        const { data, error } = await supabase.from('saved_jobs').insert(obj).select().single();
+        if (error) throw error;
+        return data;
       },
       delete: async (id) => {
-        return withTableFallback(['saved_jobs', 'savedjob', 'SavedJob'], async (tableName) => {
-          const { error } = await supabase.from(tableName).delete().eq('id', id);
-          if (error) throw error;
-        });
+        const { error } = await supabase.from('saved_jobs').delete().eq('id', id);
+        if (error) throw error;
       }
     }
   },
