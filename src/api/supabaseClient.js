@@ -11,13 +11,23 @@ if (!supabaseUrl || !supabaseAnonKey) {
 async function getAccessToken() {
   if (typeof window === 'undefined') return null;
   const clerk = window?.Clerk;
-  const session = clerk?.session;
-  if (!session?.getToken) return null;
+  if (!clerk) return null;
 
   try {
-    const token = await session.getToken({ template: supabaseJwtTemplate });
+    if (!clerk.loaded && typeof clerk.load === 'function') {
+      await clerk.load();
+    }
+
+    const tokenGetter =
+      clerk?.session?.getToken ||
+      clerk?.user?.getToken;
+
+    if (typeof tokenGetter !== 'function') return null;
+
+    const token = await tokenGetter.call(clerk.session || clerk.user, { template: supabaseJwtTemplate });
     return token || null;
-  } catch {
+  } catch (error) {
+    console.warn('Supabase Clerk token fetch failed:', error?.message || error);
     return null;
   }
 }
