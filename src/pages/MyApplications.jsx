@@ -34,7 +34,7 @@ export default function MyApplications() {
 
       const apps = await api.entities.Application.filter(
         { candidate_email: userData.email },
-        '-created_date'
+        '-created_at'
       );
       setApplications(apps);
     } catch (error) {
@@ -77,6 +77,7 @@ export default function MyApplications() {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
+    if (!dateString || Number.isNaN(date.getTime())) return 'Recently';
     return date.toLocaleDateString('en-IN', { 
       day: 'numeric', 
       month: 'short', 
@@ -133,11 +134,11 @@ export default function MyApplications() {
                           <Building2 className="w-6 h-6 text-[#3aafc4]" />
                         </div>
                         <div>
-                          <h3 className="font-bold text-gray-900">{app.job_title}</h3>
-                          <p className="text-gray-600">{app.company_name}</p>
+                          <h3 className="font-bold text-gray-900">{app.company_name || 'Company'}</h3>
+                          <p className="text-gray-600">{app.job_title || 'Role'}</p>
                           <p className="text-sm text-gray-400 mt-1 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            Applied on {formatDate(app.created_date)}
+                            Applied on {formatDate(app.created_at)}
                           </p>
                         </div>
                       </div>
