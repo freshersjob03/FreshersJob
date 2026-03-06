@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPageUrl } from '@/utils';
 import { api } from '@/api/apiClient';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/working-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,7 +22,8 @@ import {
   Plus,
   X,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  Upload
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -31,6 +32,7 @@ export default function PostJob() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [success, setSuccess] = useState(false);
   const [newSkill, setNewSkill] = useState('');
   const { toast } = useToast();
@@ -45,6 +47,7 @@ export default function PostJob() {
     salary_max: '',
     description: '',
     requirements: '',
+    company_logo: '',
     skills: [],
     status: 'active'
   });
@@ -85,7 +88,8 @@ export default function PostJob() {
         if (userProfile.role === 'employer') {
           setJobData(prev => ({
             ...prev,
-            company_name: userProfile.company_name || ''
+            company_name: userProfile.company_name || '',
+            company_logo: userProfile.company_logo || ''
           }));
         } else {
           // Redirect non-employers
@@ -113,6 +117,32 @@ export default function PostJob() {
     });
   };
 
+  const handleLogoUpload = async (e) => {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingLogo(true);
+      const result = await api.integrations.Core.UploadFile({ file });
+      if (!result?.file_url) throw new Error('Could not upload company logo.');
+      setJobData((prev) => ({ ...prev, company_logo: result.file_url }));
+      toast({
+        title: 'Logo uploaded',
+        description: 'Company logo added to this posting.',
+      });
+    } catch (error) {
+      console.error('Logo upload error:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Upload failed',
+        description: error?.message || 'Could not upload company logo.',
+      });
+    } finally {
+      setUploadingLogo(false);
+      if (e?.target) e.target.value = '';
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setPosting(true);
@@ -120,13 +150,15 @@ export default function PostJob() {
     try {
       const payload = {
         title: jobData.title,
-        company: jobData.company_name,
+        company_name: jobData.company_name,
         location: jobData.location,
         job_type: jobData.job_type,
+        experience_level: jobData.experience_level,
         salary_min: jobData.salary_min ? parseFloat(jobData.salary_min) : null,
         salary_max: jobData.salary_max ? parseFloat(jobData.salary_max) : null,
         description: jobData.description,
         requirements: jobData.requirements,
+        company_logo: jobData.company_logo || null,
         skills: jobData.skills,
         employer_id: user.email,
       };
@@ -223,6 +255,50 @@ export default function PostJob() {
                       Add company name in your employer profile first.
                     </p>
                   )}
+                </div>
+
+                <div>
+                  <Label>Company Logo (Optional)</Label>
+                  <div className="mt-2 flex items-center gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={uploadingLogo}
+                      className="relative overflow-hidden"
+                    >
+                      {uploadingLogo ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4 mr-2" />
+                      )}
+                      Upload Logo
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={handleLogoUpload}
+                        disabled={uploadingLogo}
+                      />
+                    </Button>
+                    <span className="text-xs text-gray-500">PNG, JPG, WEBP</span>
+                  </div>
+                  {jobData.company_logo ? (
+                    <div className="mt-3 flex items-center gap-3">
+                      <img
+                        src={jobData.company_logo}
+                        alt="Company logo preview"
+                        className="w-12 h-12 rounded-lg object-cover border border-gray-200"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => setJobData((prev) => ({ ...prev, company_logo: '' }))}
+                      >
+                        Remove logo
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
