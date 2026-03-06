@@ -52,12 +52,48 @@ export default function MyApplications() {
       const jobs = await api.entities.Job.list('-created_at', 1000).catch(() => []);
       const jobsById = new Map((jobs || []).map((j) => [String(j.id), j]));
 
+      // For schemas/environments where list endpoint returns partial data,
+      // fetch missing jobs by id one-by-one.
+      const appJobIdsNeedingFetch = Array.from(
+        new Set(
+          (apps || [])
+            .map((a) => (a?.job_id != null ? String(a.job_id) : null))
+            .filter((id) => id && !jobsById.has(id))
+        )
+      );
+
+      if (appJobIdsNeedingFetch.length > 0) {
+        const fetchedJobs = await Promise.all(
+          appJobIdsNeedingFetch.map((id) =>
+            api.entities.Job.filter({ id }).then((rows) => rows?.[0] || null).catch(() => null)
+          )
+        );
+        fetchedJobs.filter(Boolean).forEach((job) => {
+          jobsById.set(String(job.id), job);
+        });
+      }
+
       const normalized = (apps || []).map((app) => {
         const job = jobsById.get(String(app.job_id));
+        const companyName =
+          app.company_name ||
+          app.company ||
+          app.employer_company ||
+          job?.company_name ||
+          job?.company ||
+          '';
+        const jobTitle =
+          app.job_title ||
+          app.title ||
+          app.role ||
+          app.position ||
+          job?.title ||
+          '';
+
         return {
           ...app,
-          company_name: app.company_name || job?.company_name || job?.company || '',
-          job_title: app.job_title || job?.title || '',
+          company_name: companyName,
+          job_title: jobTitle,
           created_at: app.created_at || app.applied_at || app.updated_at || null,
         };
       });
@@ -160,8 +196,8 @@ export default function MyApplications() {
                           <Building2 className="w-6 h-6 text-[#3aafc4]" />
                         </div>
                         <div>
-                          <h3 className="font-bold text-gray-900">{app.company_name || 'Company'}</h3>
-                          <p className="text-gray-600">{app.job_title || 'Role'}</p>
+                          <h3 className="font-bold text-gray-900">{app.company_name || 'Unknown company'}</h3>
+                          <p className="text-gray-600">{app.job_title || 'Unknown role'}</p>
                           <p className="text-sm text-gray-400 mt-1 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             Applied on {formatDate(app.created_at)}
