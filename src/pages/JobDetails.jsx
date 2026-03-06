@@ -270,6 +270,41 @@ export default function JobDetails() {
     }
   };
 
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
+    const shareTitle = job?.title ? `${job.title} at ${job.company_name || 'FreshersJob'}` : 'Job Opening on FreshersJob';
+    const shareText = `Check out this job: ${shareTitle}`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      }
+    } catch (error) {
+      // User-cancelled share should not show an error.
+      if (error?.name === 'AbortError') return;
+    }
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      }
+    } catch (_) {
+      // ignore clipboard failure and continue with whatsapp fallback
+    }
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText}\n${shareUrl}`)}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    toast({
+      title: 'Share link ready',
+      description: 'Opened WhatsApp share. Job link copied to clipboard too.',
+    });
+  };
+
   const formatSalary = (min, max) => {
     if (!min && !max) return 'Not disclosed';
     if (min && max) return `₹${min} - ${max} LPA`;
@@ -345,9 +380,7 @@ export default function JobDetails() {
                       variant="outline"
                       size="icon"
                       className="h-10 w-10"
-                      onClick={() => {
-                        navigator.clipboard.writeText(window.location.href);
-                      }}
+                      onClick={handleShare}
                     >
                       <Share2 className="w-5 h-5" />
                     </Button>
