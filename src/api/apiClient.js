@@ -356,17 +356,48 @@ export const api = {
     },
     SavedJob: {
       filter: async (filterObj = {}) => {
+        const hasEmail = Object.prototype.hasOwnProperty.call(filterObj, 'user_email');
+        const hasUserId = Object.prototype.hasOwnProperty.call(filterObj, 'user_id');
+
+        if (hasEmail && hasUserId) {
+          const { user_email: userEmail, user_id: userId, ...rest } = filterObj;
+
+          const [byEmailRes, byIdRes] = await Promise.all([
+            supabase.from('saved_jobs').select('*').match({ ...rest, user_email: userEmail }),
+            supabase.from('saved_jobs').select('*').match({ ...rest, user_id: userId }),
+          ]);
+
+          const firstError = byEmailRes.error || byIdRes.error;
+          if (firstError) throw firstError;
+
+          const merged = [...(byEmailRes.data || []), ...(byIdRes.data || [])];
+          const deduped = Array.from(new Map(merged.map((row) => [row.id, row])).values());
+          return deduped;
+        }
+
         let query = supabase.from('saved_jobs').select('*');
         if (Object.keys(filterObj).length) {
           query = query.match(filterObj);
         }
+
         const { data, error } = await query;
         if (error) throw error;
         return data || [];
       },
       create: async (obj) => {
         const { data, error } = await supabase.from('saved_jobs').insert(obj).select().single();
-        if (error) throw error;
+        if (error) {
+          // Already saved by the same user/job pair.
+          if (String(error.code) === '23505') {
+            const matches = await api.entities.SavedJob.filter({
+              job_id: obj?.job_id,
+              user_email: obj?.user_email,
+              user_id: obj?.user_id,
+            });
+            if (matches.length > 0) return matches[0];
+          }
+          throw error;
+        }
         return data;
       },
       delete: async (id) => {
