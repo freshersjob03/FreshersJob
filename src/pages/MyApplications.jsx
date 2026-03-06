@@ -32,11 +32,37 @@ export default function MyApplications() {
       const userData = await api.auth.me();
       setUser(userData);
 
-      const apps = await api.entities.Application.filter(
-        { candidate_email: userData.email },
-        '-created_at'
-      );
-      setApplications(apps);
+      let apps = [];
+      try {
+        apps = await api.entities.Application.filter(
+          { candidate_email: userData.email },
+          '-created_at'
+        );
+      } catch (_) {}
+
+      if (!apps.length) {
+        try {
+          apps = await api.entities.Application.filter(
+            { candidate_id: userData.email },
+            '-created_at'
+          );
+        } catch (_) {}
+      }
+
+      const jobs = await api.entities.Job.list('-created_at', 1000).catch(() => []);
+      const jobsById = new Map((jobs || []).map((j) => [String(j.id), j]));
+
+      const normalized = (apps || []).map((app) => {
+        const job = jobsById.get(String(app.job_id));
+        return {
+          ...app,
+          company_name: app.company_name || job?.company_name || job?.company || '',
+          job_title: app.job_title || job?.title || '',
+          created_at: app.created_at || app.applied_at || app.updated_at || null,
+        };
+      });
+
+      setApplications(normalized);
     } catch (error) {
       console.error('Error loading applications:', error);
     } finally {
