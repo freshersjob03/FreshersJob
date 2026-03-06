@@ -4,6 +4,7 @@
 -- 1) backend/migrations/001_create_core_tables.sql
 -- 2) backend/migrations/002_normalize_legacy_schema.sql
 -- 3) backend/migrations/003_constraints_indexes.sql
+-- 4) backend/migrations/004_enable_rls_and_policies.sql   (run only after JWT auth integration)
 --
 -- This file is only a runbook/verification sheet.
 
