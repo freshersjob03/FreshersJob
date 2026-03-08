@@ -65,6 +65,7 @@ const INDIAN_LOCATIONS = [
   'Lakshadweep',
   'Puducherry'
 ];
+const SORTED_INDIAN_LOCATIONS = [...INDIAN_LOCATIONS].sort((a, b) => a.localeCompare(b));
 
 export default function PostJob() {
   const [user, setUser] = useState(null);
@@ -74,6 +75,7 @@ export default function PostJob() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [success, setSuccess] = useState(false);
   const [newSkill, setNewSkill] = useState('');
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const { toast } = useToast();
   
   const [jobData, setJobData] = useState({
@@ -108,6 +110,11 @@ export default function PostJob() {
 
   const popularLocations = ['Bangalore', 'Mumbai', 'Delhi NCR', 'Hyderabad', 'Chennai', 'Pune', 'Remote'];
   const popularSkills = ['Python', 'Java', 'JavaScript', 'React', 'Node.js', 'SQL', 'AWS', 'Machine Learning', 'Data Analysis', 'Excel'];
+  const locationSuggestions = jobData.location
+    ? SORTED_INDIAN_LOCATIONS.filter((location) =>
+        location.toLowerCase().startsWith(jobData.location.toLowerCase())
+      ).slice(0, 8)
+    : [];
 
   useEffect(() => {
     loadData();
@@ -394,19 +401,36 @@ export default function PostJob() {
               <CardContent className="space-y-4">
                 <div>
                   <Label>Location *</Label>
-                  <Input
-                    value={jobData.location}
-                    onChange={(e) => setJobData({ ...jobData, location: e.target.value })}
-                    placeholder="e.g., Bangalore, India"
-                    list="postjob-location-options"
-                    required
-                    className="mt-1"
-                  />
-                  <datalist id="postjob-location-options">
-                    {INDIAN_LOCATIONS.map((location) => (
-                      <option key={location} value={location} />
-                    ))}
-                  </datalist>
+                  <div className="relative mt-1">
+                    <Input
+                      value={jobData.location}
+                      onChange={(e) => {
+                        setJobData({ ...jobData, location: e.target.value });
+                        setShowLocationSuggestions(true);
+                      }}
+                      onFocus={() => setShowLocationSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowLocationSuggestions(false), 120)}
+                      placeholder="e.g., Bangalore, India"
+                      required
+                    />
+                    {showLocationSuggestions && locationSuggestions.length > 0 && (
+                      <div className="absolute z-20 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg max-h-56 overflow-auto">
+                        {locationSuggestions.map((location) => (
+                          <button
+                            key={location}
+                            type="button"
+                            className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+                            onClick={() => {
+                              setJobData({ ...jobData, location });
+                              setShowLocationSuggestions(false);
+                            }}
+                          >
+                            {location}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {popularLocations.map((loc) => (
                       <Badge
