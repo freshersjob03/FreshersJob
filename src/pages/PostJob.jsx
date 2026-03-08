@@ -27,6 +27,45 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const INDIAN_LOCATIONS = [
+  'Andhra Pradesh',
+  'Arunachal Pradesh',
+  'Assam',
+  'Bihar',
+  'Chhattisgarh',
+  'Goa',
+  'Gujarat',
+  'Haryana',
+  'Himachal Pradesh',
+  'Jharkhand',
+  'Karnataka',
+  'Kerala',
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Manipur',
+  'Meghalaya',
+  'Mizoram',
+  'Nagaland',
+  'Odisha',
+  'Punjab',
+  'Rajasthan',
+  'Sikkim',
+  'Tamil Nadu',
+  'Telangana',
+  'Tripura',
+  'Uttar Pradesh',
+  'Uttarakhand',
+  'West Bengal',
+  'Andaman and Nicobar Islands',
+  'Chandigarh',
+  'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi NCR',
+  'Jammu and Kashmir',
+  'Ladakh',
+  'Lakshadweep',
+  'Puducherry'
+];
+
 export default function PostJob() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -359,9 +398,15 @@ export default function PostJob() {
                     value={jobData.location}
                     onChange={(e) => setJobData({ ...jobData, location: e.target.value })}
                     placeholder="e.g., Bangalore, India"
+                    list="postjob-location-options"
                     required
                     className="mt-1"
                   />
+                  <datalist id="postjob-location-options">
+                    {INDIAN_LOCATIONS.map((location) => (
+                      <option key={location} value={location} />
+                    ))}
+                  </datalist>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {popularLocations.map((loc) => (
                       <Badge
