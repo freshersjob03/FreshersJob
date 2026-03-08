@@ -222,6 +222,7 @@ export default function Onboarding() {
     try {
       const userData = await api.auth.me();
       setUser(userData);
+      const authIntent = localStorage.getItem('freshersjob_auth_intent');
       
       // Check for pending role from signup
       const pendingRole = localStorage.getItem('freshersjob_pending_role');
@@ -260,14 +261,28 @@ export default function Onboarding() {
           return;
         }
 
+        if (authIntent === 'register') {
+          window.alert('Account is already registered. Please login to continue.');
+        }
+        localStorage.removeItem('freshersjob_auth_intent');
         localStorage.removeItem('freshersjob_pending_role');
         window.location.href = existingRole === 'employer'
           ? createPageUrl('PostJob')
           : createPageUrl('Feed');
+        return;
       }
+
+      if (authIntent === 'login') {
+        window.alert('You need to register this account first.');
+      }
+      localStorage.removeItem('freshersjob_auth_intent');
     } catch (error) {
-      // Not logged in
-      window.location.href = createPageUrl('Login');
+      // Not logged in: open Clerk sign-in if available, otherwise return to landing.
+      if (window?.Clerk?.openSignIn) {
+        window.Clerk.openSignIn({ redirectUrl: createPageUrl('Feed') });
+      } else {
+        window.location.href = createPageUrl('Landing');
+      }
     } finally {
       setInitializing(false);
     }
