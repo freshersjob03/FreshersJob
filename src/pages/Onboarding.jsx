@@ -18,6 +18,8 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
+const QUICK_LOCATIONS = ['Bangalore', 'Mumbai', 'Delhi NCR', 'Hyderabad', 'Chennai', 'Pune', 'Remote'];
+
 const CandidateForm = React.memo(function CandidateForm({ formData, onFieldChange }) {
   return (
     <div className="space-y-5">
@@ -43,6 +45,22 @@ const CandidateForm = React.memo(function CandidateForm({ formData, onFieldChang
             autoComplete="off"
             className="pl-10 h-12 border-gray-200"
           />
+        </div>
+        <div className="flex flex-wrap gap-2 pt-1">
+          {QUICK_LOCATIONS.map((city) => (
+            <button
+              key={city}
+              type="button"
+              onClick={() => onFieldChange('location')({ target: { value: city } })}
+              className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                formData.location === city
+                  ? 'bg-[#3aafc4]/10 text-[#3aafc4] border-[#3aafc4]/40'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              {city}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -179,6 +197,22 @@ const EmployerForm = React.memo(function EmployerForm({ formData, onFieldChange 
             autoComplete="off"
             className="pl-10 h-12 border-gray-200"
           />
+        </div>
+        <div className="flex flex-wrap gap-2 pt-1">
+          {QUICK_LOCATIONS.map((city) => (
+            <button
+              key={city}
+              type="button"
+              onClick={() => onFieldChange('location')({ target: { value: city } })}
+              className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                formData.location === city
+                  ? 'bg-[#3aafc4]/10 text-[#3aafc4] border-[#3aafc4]/40'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              {city}
+            </button>
+          ))}
         </div>
       </div>
 
