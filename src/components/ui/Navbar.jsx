@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/AuthContext';
@@ -69,56 +69,64 @@ export default function Navbar({ user, profile, onLogout, isAuthenticated }) {
     navigateToLogin(createPageUrl('Feed'));
   };
 
+  const navLinkClassName = ({ isActive }) =>
+    `relative flex items-center gap-2 px-3 py-2 border-b-2 font-medium transition-colors ${
+      isActive
+        ? 'text-[#4f9497] border-[#4f9497]'
+        : 'text-[#4a4d55] border-transparent hover:text-[#4f9497]'
+    }`;
+
   const NavLinks = () => (
     <>
-      <Link 
+      <NavLink
         to={createPageUrl('Feed')}
-        className="flex items-center gap-2 px-3 py-2 text-[#4a4d55] hover:text-[#4f9497] font-medium transition-colors"
+        end
+        className={navLinkClassName}
       >
         <Home className="w-5 h-5" />
         <span className="hidden lg:inline">Home</span>
-      </Link>
-      <Link 
+      </NavLink>
+      <NavLink
         to={createPageUrl('Jobs')}
-        className="flex items-center gap-2 px-3 py-2 text-[#4a4d55] hover:text-[#4f9497] font-medium transition-colors"
+        className={navLinkClassName}
       >
         <Briefcase className="w-5 h-5" />
         <span className="hidden lg:inline">Jobs</span>
-      </Link>
-      <Link 
+      </NavLink>
+      <NavLink
         to={createPageUrl('SavedJobs')}
-        className="flex items-center gap-2 px-3 py-2 text-[#4a4d55] hover:text-[#4f9497] font-medium transition-colors"
+        className={navLinkClassName}
       >
         <Bookmark className="w-5 h-5" />
         <span className="hidden lg:inline">Saved</span>
-      </Link>
+      </NavLink>
       {!isEmployer && (
         <>
-          <Link 
+          <NavLink
             to={createPageUrl('MyApplications')}
-            className="flex items-center gap-2 px-3 py-2 text-[#4a4d55] hover:text-[#4f9497] font-medium transition-colors"
+            className={navLinkClassName}
           >
             <FileText className="w-5 h-5" />
             <span className="hidden lg:inline">Applications</span>
-          </Link>
+          </NavLink>
         </>
       )}
       {isEmployer && (
         <>
-          <Link 
+          <NavLink
             to={createPageUrl('PostJob')}
-            className="flex items-center gap-2 px-3 py-2 text-[#4a4d55] hover:text-[#4f9497] font-medium transition-colors"
+            className={navLinkClassName}
           >
             <PlusCircle className="w-5 h-5" />
             <span className="hidden lg:inline">Post Job</span>
-          </Link>
-          <Link 
+          </NavLink>
+          <NavLink
             to={createPageUrl('ManageJobs')}
-            className="flex items-center gap-2 px-3 py-2 text-[#4a4d55] hover:text-[#4f9497] font-medium transition-colors"
+            className={navLinkClassName}
           >
             <Briefcase className="w-5 h-5" />
             <span className="hidden lg:inline">My Jobs</span>
-          </Link>
+          </NavLink>
         </>
       )}
     </>
