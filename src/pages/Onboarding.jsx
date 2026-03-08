@@ -84,7 +84,7 @@ const CandidateForm = React.memo(function CandidateForm({ formData, onFieldChang
   );
 });
 
-const EmployerForm = React.memo(function EmployerForm({ formData, onFieldChange, user }) {
+const EmployerForm = React.memo(function EmployerForm({ formData, onFieldChange }) {
   return (
     <div className="space-y-5">
       <div className="space-y-2">
@@ -104,9 +104,11 @@ const EmployerForm = React.memo(function EmployerForm({ formData, onFieldChange,
       <div className="space-y-2">
         <Label className="text-gray-700 font-medium">Your Name</Label>
         <Input
-          value={user?.full_name || user?.name || ''}
-          readOnly
-          className="h-12 border-gray-200 bg-gray-50"
+          placeholder="e.g., Priyanshu Rathore"
+          value={formData.full_name}
+          onChange={onFieldChange('full_name')}
+          autoComplete="name"
+          className="h-12 border-gray-200"
         />
       </div>
 
@@ -202,6 +204,7 @@ export default function Onboarding() {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
+    full_name: '',
     headline: '',
     bio: '',
     location: '',
@@ -222,6 +225,10 @@ export default function Onboarding() {
     try {
       const userData = await api.auth.me();
       setUser(userData);
+      setFormData((prev) => ({
+        ...prev,
+        full_name: prev.full_name || userData?.full_name || userData?.name || ''
+      }));
       const authIntent = localStorage.getItem('freshersjob_auth_intent');
       
       // Check for pending role from signup
@@ -247,6 +254,7 @@ export default function Onboarding() {
           setStep(2);
           setFormData((prev) => ({
             ...prev,
+            full_name: existingProfile.full_name || userData?.full_name || userData?.name || '',
             headline: existingProfile.headline || '',
             bio: existingProfile.bio || '',
             location: existingProfile.location || '',
@@ -297,6 +305,7 @@ export default function Onboarding() {
       const profileData = {
         created_by: user.email,
         role,
+        full_name: formData.full_name?.trim(),
         headline: formData.headline,
         bio: formData.bio,
         location: formData.location,
@@ -437,7 +446,7 @@ export default function Onboarding() {
                 {role === 'candidate' ? (
                   <CandidateForm formData={formData} onFieldChange={updateField} />
                 ) : (
-                  <EmployerForm formData={formData} onFieldChange={updateField} user={user} />
+                  <EmployerForm formData={formData} onFieldChange={updateField} />
                 )}
                 
                 <div className="flex gap-3 pt-4">
