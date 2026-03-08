@@ -18,7 +18,44 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
-const QUICK_LOCATIONS = ['Bangalore', 'Mumbai', 'Delhi NCR', 'Hyderabad', 'Chennai', 'Pune', 'Remote'];
+const INDIAN_LOCATIONS = [
+  'Andhra Pradesh',
+  'Arunachal Pradesh',
+  'Assam',
+  'Bihar',
+  'Chhattisgarh',
+  'Goa',
+  'Gujarat',
+  'Haryana',
+  'Himachal Pradesh',
+  'Jharkhand',
+  'Karnataka',
+  'Kerala',
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Manipur',
+  'Meghalaya',
+  'Mizoram',
+  'Nagaland',
+  'Odisha',
+  'Punjab',
+  'Rajasthan',
+  'Sikkim',
+  'Tamil Nadu',
+  'Telangana',
+  'Tripura',
+  'Uttar Pradesh',
+  'Uttarakhand',
+  'West Bengal',
+  'Andaman and Nicobar Islands',
+  'Chandigarh',
+  'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi NCR',
+  'Jammu and Kashmir',
+  'Ladakh',
+  'Lakshadweep',
+  'Puducherry'
+];
 
 const CandidateForm = React.memo(function CandidateForm({ formData, onFieldChange }) {
   return (
@@ -43,25 +80,15 @@ const CandidateForm = React.memo(function CandidateForm({ formData, onFieldChang
             value={formData.location}
             onChange={onFieldChange('location')}
             autoComplete="off"
+            list="candidate-location-options"
             className="pl-10 h-12 border-gray-200"
           />
         </div>
-        <div className="flex flex-wrap gap-2 pt-1">
-          {QUICK_LOCATIONS.map((city) => (
-            <button
-              key={city}
-              type="button"
-              onClick={() => onFieldChange('location')({ target: { value: city } })}
-              className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
-                formData.location === city
-                  ? 'bg-[#3aafc4]/10 text-[#3aafc4] border-[#3aafc4]/40'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              {city}
-            </button>
+        <datalist id="candidate-location-options">
+          {INDIAN_LOCATIONS.map((location) => (
+            <option key={location} value={location} />
           ))}
-        </div>
+        </datalist>
       </div>
 
       <div className="space-y-2">
@@ -195,25 +222,15 @@ const EmployerForm = React.memo(function EmployerForm({ formData, onFieldChange 
             value={formData.location}
             onChange={onFieldChange('location')}
             autoComplete="off"
+            list="employer-location-options"
             className="pl-10 h-12 border-gray-200"
           />
         </div>
-        <div className="flex flex-wrap gap-2 pt-1">
-          {QUICK_LOCATIONS.map((city) => (
-            <button
-              key={city}
-              type="button"
-              onClick={() => onFieldChange('location')({ target: { value: city } })}
-              className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
-                formData.location === city
-                  ? 'bg-[#3aafc4]/10 text-[#3aafc4] border-[#3aafc4]/40'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              {city}
-            </button>
+        <datalist id="employer-location-options">
+          {INDIAN_LOCATIONS.map((location) => (
+            <option key={location} value={location} />
           ))}
-        </div>
+        </datalist>
       </div>
 
       <div className="space-y-2">
