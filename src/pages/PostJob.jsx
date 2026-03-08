@@ -108,7 +108,6 @@ export default function PostJob() {
     { value: '2-3 years', label: '2-3 Years' }
   ];
 
-  const popularLocations = ['Bangalore', 'Mumbai', 'Delhi NCR', 'Hyderabad', 'Chennai', 'Pune', 'Remote'];
   const popularSkills = ['Python', 'Java', 'JavaScript', 'React', 'Node.js', 'SQL', 'AWS', 'Machine Learning', 'Data Analysis', 'Excel'];
   const locationSuggestions = jobData.location
     ? SORTED_INDIAN_LOCATIONS.filter((location) =>
@@ -430,18 +429,6 @@ export default function PostJob() {
                         ))}
                       </div>
                     )}
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {popularLocations.map((loc) => (
-                      <Badge
-                        key={loc}
-                        variant="outline"
-                        className="cursor-pointer hover:bg-[#3aafc4]/10"
-                        onClick={() => setJobData({ ...jobData, location: loc })}
-                      >
-                        {loc}
-                      </Badge>
-                    ))}
                   </div>
                 </div>
 
