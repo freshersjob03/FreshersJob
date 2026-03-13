@@ -283,11 +283,13 @@
       <div class="form-row">
         <div class="form-group">
           <label>State *</label>
-          <input type="text" id="jobState" placeholder="e.g. Karnataka" />
+          <input type="text" id="jobState" placeholder="e.g. Karnataka" list="stateOptions" />
+          <datalist id="stateOptions"></datalist>
         </div>
         <div class="form-group">
           <label>City *</label>
-          <input type="text" id="jobCity" placeholder="e.g. Bengaluru" />
+          <input type="text" id="jobCity" placeholder="e.g. Bengaluru" list="cityOptions" />
+          <datalist id="cityOptions"></datalist>
         </div>
       </div>
 
@@ -438,6 +440,94 @@
 </div>
 
 <script>
+let STATE_CITY_MAP = {};
+
+function normalizeText(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function fillDatalist(datalistId, items) {
+  const datalist = document.getElementById(datalistId);
+  if (!datalist) return;
+  datalist.innerHTML = '';
+  (items || []).forEach((item) => {
+    const opt = document.createElement('option');
+    opt.value = item;
+    datalist.appendChild(opt);
+  });
+}
+
+function getCitiesForState(state) {
+  if (!state) return [];
+  const exact = STATE_CITY_MAP[state];
+  if (exact) return exact;
+
+  const normalized = normalizeText(state);
+  const matchKey = Object.keys(STATE_CITY_MAP).find((key) => normalizeText(key) === normalized);
+  return matchKey ? STATE_CITY_MAP[matchKey] : [];
+}
+
+function updateStateSuggestions() {
+  const stateInput = document.getElementById('jobState');
+  if (!stateInput) return;
+  const query = normalizeText(stateInput.value);
+  const states = Object.keys(STATE_CITY_MAP || {});
+  const filtered = query
+    ? states.filter((s) => normalizeText(s).startsWith(query))
+    : states;
+  fillDatalist('stateOptions', filtered.slice(0, 50));
+}
+
+function updateCitySuggestions() {
+  const stateInput = document.getElementById('jobState');
+  const cityInput = document.getElementById('jobCity');
+  if (!stateInput || !cityInput) return;
+
+  const cities = getCitiesForState(stateInput.value);
+  const query = normalizeText(cityInput.value);
+  const filtered = query
+    ? cities.filter((c) => normalizeText(c).startsWith(query))
+    : cities;
+  fillDatalist('cityOptions', filtered.slice(0, 50));
+}
+
+async function loadCityData() {
+  try {
+    const res = await fetch('./city-data.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('Failed to load city data');
+    STATE_CITY_MAP = await res.json();
+  } catch (err) {
+    console.warn('City list unavailable:', err);
+    STATE_CITY_MAP = {};
+  }
+
+  updateStateSuggestions();
+  updateCitySuggestions();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const stateInput = document.getElementById('jobState');
+  const cityInput = document.getElementById('jobCity');
+
+  if (stateInput) {
+    stateInput.addEventListener('input', () => {
+      updateStateSuggestions();
+      if (!stateInput.value) {
+        cityInput.value = '';
+      }
+      updateCitySuggestions();
+    });
+    stateInput.addEventListener('focus', updateStateSuggestions);
+  }
+
+  if (cityInput) {
+    cityInput.addEventListener('input', updateCitySuggestions);
+    cityInput.addEventListener('focus', updateCitySuggestions);
+  }
+
+  loadCityData();
+});
+
 function addTag(e) {
   if (e.key === "Enter") {
     e.preventDefault();
