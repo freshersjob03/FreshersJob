@@ -76,6 +76,8 @@ export default function PostJob() {
   const [success, setSuccess] = useState(false);
   const [newSkill, setNewSkill] = useState('');
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const [cityMap, setCityMap] = useState({});
   const { toast } = useToast();
   
   const [jobData, setJobData] = useState({
@@ -115,9 +117,27 @@ export default function PostJob() {
         location.toLowerCase().startsWith(jobData.state.toLowerCase())
       ).slice(0, 8)
     : [];
+  const normalizedState = String(jobData.state || '').trim().toLowerCase();
+  const matchedStateKey = normalizedState
+    ? Object.keys(cityMap).find((state) => state.toLowerCase() === normalizedState) ||
+      Object.keys(cityMap).find((state) => state.toLowerCase().startsWith(normalizedState))
+    : null;
+  const citiesForState = matchedStateKey ? (cityMap[matchedStateKey] || []) : [];
+  const citySuggestions = citiesForState.length > 0
+    ? (jobData.city
+        ? citiesForState.filter((city) =>
+            city.toLowerCase().startsWith(jobData.city.toLowerCase())
+          )
+        : citiesForState
+      ).slice(0, 8)
+    : [];
 
   useEffect(() => {
     loadData();
+  }, []);
+
+  useEffect(() => {
+    loadCityData();
   }, []);
 
   const loadData = async () => {
@@ -146,6 +166,18 @@ export default function PostJob() {
       console.error('Error loading data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCityData = async () => {
+    try {
+      const res = await fetch('/city-data.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('City list unavailable');
+      const data = await res.json();
+      setCityMap(data || {});
+    } catch (error) {
+      console.warn('Failed to load city list:', error);
+      setCityMap({});
     }
   };
 
@@ -431,13 +463,36 @@ export default function PostJob() {
                 </div>
                 <div>
                   <Label>City *</Label>
-                  <Input
-                    value={jobData.city}
-                    onChange={(e) => setJobData({ ...jobData, city: e.target.value })}
-                    placeholder="e.g., Bengaluru"
-                    required
-                    className="mt-1"
-                  />
+                  <div className="relative mt-1">
+                    <Input
+                      value={jobData.city}
+                      onChange={(e) => {
+                        setJobData({ ...jobData, city: e.target.value });
+                        setShowCitySuggestions(true);
+                      }}
+                      onFocus={() => setShowCitySuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowCitySuggestions(false), 120)}
+                      placeholder="e.g., Bengaluru"
+                      required
+                    />
+                    {showCitySuggestions && citySuggestions.length > 0 && (
+                      <div className="absolute z-20 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg max-h-56 overflow-auto">
+                        {citySuggestions.map((city) => (
+                          <button
+                            key={city}
+                            type="button"
+                            className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+                            onClick={() => {
+                              setJobData({ ...jobData, city });
+                              setShowCitySuggestions(false);
+                            }}
+                          >
+                            {city}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div>
