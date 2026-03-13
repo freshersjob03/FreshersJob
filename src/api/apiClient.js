@@ -234,7 +234,11 @@ export const api = {
           ...obj,
           company_name: obj?.company_name || obj?.company || null,
           company: obj?.company || obj?.company_name || null,
+          state: obj?.state || null,
+          city: obj?.city || null,
         };
+        const resolvedLocation = obj?.location || [payload.city, payload.state].filter(Boolean).join(', ');
+        if (resolvedLocation) payload.location = resolvedLocation;
 
         try {
           if (!canUseLocalBackend()) throw new Error('Local backend disabled');

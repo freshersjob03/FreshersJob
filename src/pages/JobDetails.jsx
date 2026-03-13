@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
+import { formatJobLocation } from '@/lib/utils';
 
 export default function JobDetails() {
   const [job, setJob] = useState(null);
@@ -323,6 +324,7 @@ export default function JobDetails() {
   }
 
   if (!job) return null;
+  const locationText = formatJobLocation(job);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -391,7 +393,7 @@ export default function JobDetails() {
                 <div className="flex flex-wrap gap-4 mt-4 text-gray-600">
                   <span className="flex items-center gap-2">
                     <MapPin className="w-5 h-5 text-gray-400" />
-                    {job.location}
+                    {locationText}
                   </span>
                   <span className="flex items-center gap-2">
                     <Briefcase className="w-5 h-5 text-gray-400" />
@@ -473,7 +475,7 @@ export default function JobDetails() {
               )}
               <div>
                 <h3 className="font-bold text-gray-900">{job.company_name}</h3>
-                <p className="text-gray-500 text-sm">{job.location}</p>
+                <p className="text-gray-500 text-sm">{locationText}</p>
               </div>
             </div>
           </Card>

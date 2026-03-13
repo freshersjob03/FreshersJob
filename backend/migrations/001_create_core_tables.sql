@@ -9,6 +9,8 @@ create table if not exists public.jobs (
   title text not null,
   company_name text,
   company text,
+  state text,
+  city text,
   location text,
   job_type text,
   experience_level text,

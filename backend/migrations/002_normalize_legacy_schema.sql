@@ -23,6 +23,8 @@ $$;
 -- Jobs
 alter table public.jobs add column if not exists company_name text;
 alter table public.jobs add column if not exists company text;
+alter table public.jobs add column if not exists state text;
+alter table public.jobs add column if not exists city text;
 alter table public.jobs add column if not exists employer_id text;
 alter table public.jobs add column if not exists created_by text;
 alter table public.jobs add column if not exists applications_count integer not null default 0;
@@ -52,6 +54,11 @@ where company_name is null and company is not null;
 update public.jobs
 set company = coalesce(company, company_name)
 where company is null and company_name is not null;
+
+update public.jobs
+set location = coalesce(location, concat_ws(', ', city, state))
+where (location is null or location = '')
+  and (city is not null or state is not null);
 
 -- UserProfile
 alter table public."UserProfile" add column if not exists created_by text;

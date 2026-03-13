@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { api } from '@/api/apiClient';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/working-toast';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -43,6 +43,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatJobLocation } from '@/lib/utils';
 
 export default function ManageJobs() {
   const [user, setUser] = useState(null);
@@ -73,19 +74,35 @@ export default function ManageJobs() {
 
       let employerJobs = await api.entities.Job.filter(
         { employer_id: userData.email },
-        '-created_date'
+        '-created_at'
       );
 
+      // Also fetch jobs by created_by field as fallback
       if (!employerJobs.length) {
-        const allJobs = await api.entities.Job.list('-created_date');
+        const jobsByCreatedBy = await api.entities.Job.filter(
+          { created_by: userData.email },
+          '-created_at'
+        );
+        employerJobs = jobsByCreatedBy;
+      }
+
+      // If still no jobs found, fetch all jobs and filter client-side
+      if (!employerJobs.length) {
+        const allJobs = await api.entities.Job.list('-created_at');
         employerJobs = (allJobs || []).filter(
           (j) => j.employer_id === userData.email || j.created_by === userData.email
         );
       }
 
+      // Debug logging to see what we're getting
+      console.log('Found jobs:', employerJobs);
+      console.log('User email:', userData.email);
+
       const normalizedJobs = (employerJobs || []).map((j) => ({
         ...j,
         status: j.status || 'active',
+        applications_count: j.applications_count || 0,
+        created_at: j.created_at || new Date().toISOString(),
       }));
       setJobs(normalizedJobs);
     } catch (error) {
@@ -130,11 +147,15 @@ export default function ManageJobs() {
 
   const formatDate = (dateString) => {
     if (!dateString) return 'just now';
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
+    try {
+      return new Date(dateString).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch (error) {
+      return 'just now';
+    }
   };
 
   const filteredJobs = jobs.filter(j => {
@@ -220,11 +241,11 @@ export default function ManageJobs() {
                                     {statusConfig.label}
                                   </Badge>
                                 </div>
-                                <p className="text-gray-600 text-sm">{job.company || job.company_name || 'Company'}</p>
+                                <p className="text-gray-600 text-sm">{job.company_name || 'Company'}</p>
                                 <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-500">
                                   <span className="flex items-center gap-1">
                                     <MapPin className="w-3 h-3" />
-                                    {job.location}
+                                    {formatJobLocation(job)}
                                   </span>
                                   <span className="flex items-center gap-1">
                                     <Users className="w-3 h-3" />
@@ -232,7 +253,7 @@ export default function ManageJobs() {
                                   </span>
                                   <span className="flex items-center gap-1">
                                     <Clock className="w-3 h-3" />
-                                    Posted {formatDate(job.created_date || job.created_at)}
+                                    Posted {formatDate(job.created_at)}
                                   </span>
                                 </div>
                               </div>

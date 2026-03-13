@@ -29,7 +29,7 @@ router.post("/", async (req, res) => {
 router.get("/candidate/:id", async (req, res) => {
   try {
     const applications = await pool.query(
-      "SELECT a.*, j.title, j.company, j.location FROM applications a JOIN jobs j ON a.job_id = j.id WHERE a.candidate_id = $1",
+      "SELECT a.*, j.title, j.company, j.company_name, j.state, j.city, j.location FROM applications a JOIN jobs j ON a.job_id = j.id WHERE a.candidate_id = $1",
       [req.params.id]
     );
     res.json(applications.rows);

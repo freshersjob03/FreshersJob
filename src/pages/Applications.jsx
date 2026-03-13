@@ -37,6 +37,7 @@ import {
   Download
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatJobLocation } from '@/lib/utils';
 
 export default function Applications() {
   const [user, setUser] = useState(null);
@@ -271,7 +272,7 @@ export default function Applications() {
               </div>
               <div>
                 <h1 className="text-2xl font-extrabold text-gray-900">{job.title}</h1>
-                <p className="text-gray-600">{job.company_name} • {job.location}</p>
+                <p className="text-gray-600">{job.company_name} • {formatJobLocation(job)}</p>
               </div>
             </div>
           )}

@@ -3,6 +3,7 @@ import { MapPin, Clock, IndianRupee, Briefcase, Bookmark, BookmarkCheck, Buildin
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { formatJobLocation } from '@/lib/utils';
 
 export default function JobCard({ job, onSave, onApply, isSaved, hasApplied, onClick }) {
   const formatSalary = (min, max) => {
@@ -73,7 +74,7 @@ export default function JobCard({ job, onSave, onApply, isSaved, hasApplied, onC
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3 text-sm text-gray-500">
             <span className="flex items-center gap-1.5">
               <MapPin className="w-4 h-4" />
-              {job.location}
+              {formatJobLocation(job)}
             </span>
             <span className="flex items-center gap-1.5">
               <Briefcase className="w-4 h-4" />

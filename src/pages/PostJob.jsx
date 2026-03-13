@@ -81,7 +81,8 @@ export default function PostJob() {
   const [jobData, setJobData] = useState({
     title: '',
     company_name: '',
-    location: '',
+    state: '',
+    city: '',
     job_type: '',
     experience_level: '',
     salary_min: '',
@@ -109,9 +110,9 @@ export default function PostJob() {
   ];
 
   const popularSkills = ['Python', 'Java', 'JavaScript', 'React', 'Node.js', 'SQL', 'AWS', 'Machine Learning', 'Data Analysis', 'Excel'];
-  const locationSuggestions = jobData.location
+  const locationSuggestions = jobData.state
     ? SORTED_INDIAN_LOCATIONS.filter((location) =>
-        location.toLowerCase().startsWith(jobData.location.toLowerCase())
+        location.toLowerCase().startsWith(jobData.state.toLowerCase())
       ).slice(0, 8)
     : [];
 
@@ -196,7 +197,9 @@ export default function PostJob() {
       const payload = {
         title: jobData.title,
         company_name: jobData.company_name,
-        location: jobData.location,
+        state: jobData.state,
+        city: jobData.city,
+        location: [jobData.city, jobData.state].filter(Boolean).join(', '),
         job_type: jobData.job_type,
         experience_level: jobData.experience_level,
         salary_min: jobData.salary_min ? parseFloat(jobData.salary_min) : null,
@@ -291,15 +294,10 @@ export default function PostJob() {
                   <Label>Company Name</Label>
                   <Input
                     value={jobData.company_name}
-                    readOnly
+                    onChange={(e) => setJobData({ ...jobData, company_name: e.target.value })}
                     placeholder="Company name from your employer profile"
-                    className="mt-1 bg-gray-50"
+                    className="mt-1"
                   />
-                  {!jobData.company_name && (
-                    <p className="text-xs text-amber-700 mt-1">
-                      Add company name in your employer profile first.
-                    </p>
-                  )}
                 </div>
 
                 <div>
@@ -399,17 +397,17 @@ export default function PostJob() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>Location *</Label>
+                  <Label>State *</Label>
                   <div className="relative mt-1">
                     <Input
-                      value={jobData.location}
+                      value={jobData.state}
                       onChange={(e) => {
-                        setJobData({ ...jobData, location: e.target.value });
+                        setJobData({ ...jobData, state: e.target.value });
                         setShowLocationSuggestions(true);
                       }}
                       onFocus={() => setShowLocationSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowLocationSuggestions(false), 120)}
-                      placeholder="e.g., Bangalore, India"
+                      placeholder="e.g., Karnataka"
                       required
                     />
                     {showLocationSuggestions && locationSuggestions.length > 0 && (
@@ -420,7 +418,7 @@ export default function PostJob() {
                             type="button"
                             className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
                             onClick={() => {
-                              setJobData({ ...jobData, location });
+                              setJobData({ ...jobData, state: location });
                               setShowLocationSuggestions(false);
                             }}
                           >
@@ -430,6 +428,16 @@ export default function PostJob() {
                       </div>
                     )}
                   </div>
+                </div>
+                <div>
+                  <Label>City *</Label>
+                  <Input
+                    value={jobData.city}
+                    onChange={(e) => setJobData({ ...jobData, city: e.target.value })}
+                    placeholder="e.g., Bengaluru"
+                    required
+                    className="mt-1"
+                  />
                 </div>
 
                 <div>
@@ -544,7 +552,7 @@ export default function PostJob() {
               <Button
                 type="submit"
                 className="flex-1 btn-primary"
-                disabled={posting || !jobData.title || !jobData.company_name || !jobData.location || !jobData.job_type || !jobData.description}
+                disabled={posting || !jobData.title || !jobData.company_name || !jobData.state || !jobData.city || !jobData.job_type || !jobData.description}
               >
                 {posting ? (
                   <Loader2 className="w-5 h-5 animate-spin" />

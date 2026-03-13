@@ -27,6 +27,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatJobLocation } from '@/lib/utils';
 
 export default function Jobs() {
   const [user, setUser] = useState(null);
@@ -113,7 +114,7 @@ export default function Jobs() {
     if (locationQuery) {
       const location = locationQuery.toLowerCase();
       result = result.filter(job => 
-        job.location.toLowerCase().includes(location)
+        formatJobLocation(job).toLowerCase().includes(location)
       );
     }
 
