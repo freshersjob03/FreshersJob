@@ -236,6 +236,7 @@ export const api = {
           company: obj?.company || obj?.company_name || null,
           state: obj?.state || null,
           city: obj?.city || null,
+          locality: obj?.locality || null,
         };
         const resolvedLocation = obj?.location || [payload.city, payload.state].filter(Boolean).join(', ');
         if (resolvedLocation) payload.location = resolvedLocation;

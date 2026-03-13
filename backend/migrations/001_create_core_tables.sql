@@ -11,6 +11,7 @@ create table if not exists public.jobs (
   company text,
   state text,
   city text,
+  locality text,
   location text,
   job_type text,
   experience_level text,

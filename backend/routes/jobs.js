@@ -34,6 +34,11 @@ router.get("/", async (req, res) => {
       conditions.push(`city = $${params.length + 1}`);
       params.push(req.query.city);
     }
+
+    if (req.query.locality) {
+      conditions.push(`locality = $${params.length + 1}`);
+      params.push(req.query.locality);
+    }
     
     // Add WHERE clause if there are conditions
     if (conditions.length > 0) {
@@ -46,7 +51,7 @@ router.get("/", async (req, res) => {
       const orderDirection = req.query.order.startsWith('-') ? 'DESC' : 'ASC';
       
       // Validate order field to prevent SQL injection
-      const allowedFields = ['created_at', 'title', 'company', 'company_name', 'state', 'city', 'location'];
+      const allowedFields = ['created_at', 'title', 'company', 'company_name', 'state', 'city', 'locality', 'location'];
       if (allowedFields.includes(orderField)) {
         query += ` ORDER BY ${orderField} ${orderDirection}`;
       } else {
@@ -89,17 +94,18 @@ router.get("/:id", async (req, res) => {
 
 // POST A JOB
 router.post("/", async (req, res) => {
-  const {
-    title,
-    company,
-    company_name,
-    state,
-    city,
-    location,
-    job_type,
-    experience_level,
-    salary_min,
-    salary_max,
+    const {
+      title,
+      company,
+      company_name,
+      state,
+      city,
+      locality,
+      location,
+      job_type,
+      experience_level,
+      salary_min,
+      salary_max,
     description,
     requirements,
     skills,
@@ -111,8 +117,8 @@ router.post("/", async (req, res) => {
     const resolvedLocation = location || [city, state].filter(Boolean).join(', ');
 
     const newJob = await pool.query(
-      "INSERT INTO jobs (title, company_name, company, state, city, location, job_type, experience_level, salary_min, salary_max, description, requirements, skills, employer_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *",
-      [title, resolvedCompanyName, resolvedCompany, state || null, city || null, resolvedLocation || null, job_type, experience_level, salary_min, salary_max, description, requirements, skills, employer_id]
+      "INSERT INTO jobs (title, company_name, company, state, city, locality, location, job_type, experience_level, salary_min, salary_max, description, requirements, skills, employer_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *",
+      [title, resolvedCompanyName, resolvedCompany, state || null, city || null, locality || null, resolvedLocation || null, job_type, experience_level, salary_min, salary_max, description, requirements, skills, employer_id]
     );
     res.status(201).json({ message: "Job posted successfully! ", job: newJob.rows[0] });
   } catch (err) {

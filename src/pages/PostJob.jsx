@@ -85,6 +85,7 @@ export default function PostJob() {
     company_name: '',
     state: '',
     city: '',
+    locality: '',
     job_type: '',
     experience_level: '',
     salary_min: '',
@@ -231,6 +232,7 @@ export default function PostJob() {
         company_name: jobData.company_name,
         state: jobData.state,
         city: jobData.city,
+        locality: jobData.locality,
         location: [jobData.city, jobData.state].filter(Boolean).join(', '),
         job_type: jobData.job_type,
         experience_level: jobData.experience_level,
@@ -494,6 +496,16 @@ export default function PostJob() {
                     )}
                   </div>
                 </div>
+                <div>
+                  <Label>Locality *</Label>
+                  <Input
+                    value={jobData.locality}
+                    onChange={(e) => setJobData({ ...jobData, locality: e.target.value })}
+                    placeholder="e.g., Indiranagar"
+                    required
+                    className="mt-1"
+                  />
+                </div>
 
                 <div>
                   <Label className="flex items-center gap-1">
@@ -607,7 +619,7 @@ export default function PostJob() {
               <Button
                 type="submit"
                 className="flex-1 btn-primary"
-                disabled={posting || !jobData.title || !jobData.company_name || !jobData.state || !jobData.city || !jobData.job_type || !jobData.description}
+                disabled={posting || !jobData.title || !jobData.company_name || !jobData.state || !jobData.city || !jobData.locality || !jobData.job_type || !jobData.description}
               >
                 {posting ? (
                   <Loader2 className="w-5 h-5 animate-spin" />

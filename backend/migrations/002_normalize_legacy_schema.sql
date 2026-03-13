@@ -25,6 +25,7 @@ alter table public.jobs add column if not exists company_name text;
 alter table public.jobs add column if not exists company text;
 alter table public.jobs add column if not exists state text;
 alter table public.jobs add column if not exists city text;
+alter table public.jobs add column if not exists locality text;
 alter table public.jobs add column if not exists employer_id text;
 alter table public.jobs add column if not exists created_by text;
 alter table public.jobs add column if not exists applications_count integer not null default 0;
