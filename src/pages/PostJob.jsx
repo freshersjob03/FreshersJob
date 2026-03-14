@@ -9,6 +9,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -78,6 +85,7 @@ export default function PostJob() {
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const [cityMap, setCityMap] = useState({});
+  const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
   
   const [jobData, setJobData] = useState({
@@ -222,8 +230,7 @@ export default function PostJob() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const postJob = async () => {
     setPosting(true);
 
     try {
@@ -266,6 +273,11 @@ export default function PostJob() {
       });
       setPosting(false);
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await postJob();
   };
 
   if (loading) {
@@ -617,6 +629,24 @@ export default function PostJob() {
                 Cancel
               </Button>
               <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowPreview(true)}
+                disabled={
+                  posting ||
+                  !jobData.title ||
+                  !jobData.company_name ||
+                  !jobData.state ||
+                  !jobData.city ||
+                  !jobData.locality ||
+                  !jobData.job_type ||
+                  !jobData.description
+                }
+              >
+                Preview
+              </Button>
+              <Button
                 type="submit"
                 className="flex-1 btn-primary"
                 disabled={posting || !jobData.title || !jobData.company_name || !jobData.state || !jobData.city || !jobData.locality || !jobData.job_type || !jobData.description}
@@ -631,6 +661,106 @@ export default function PostJob() {
           </form>
         </motion.div>
       </div>
+
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Preview Job Post</DialogTitle>
+            <DialogDescription>
+              Review all details before publishing.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 mt-2">
+            <div className="flex items-start gap-4">
+              {jobData.company_logo ? (
+                <img
+                  src={jobData.company_logo}
+                  alt="Company logo preview"
+                  className="w-16 h-16 rounded-xl object-cover border border-gray-100"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
+                  <Briefcase className="w-7 h-7" />
+                </div>
+              )}
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">{jobData.title || 'Job Title'}</h2>
+                <p className="text-gray-600">{jobData.company_name || 'Company Name'}</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {jobData.city}, {jobData.state} • {jobData.locality}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="rounded-lg border border-gray-200 p-3">
+                <p className="text-xs text-gray-500">Job Type</p>
+                <p className="text-sm font-semibold text-gray-900 capitalize">{jobData.job_type || '-'}</p>
+              </div>
+              <div className="rounded-lg border border-gray-200 p-3">
+                <p className="text-xs text-gray-500">Experience Level</p>
+                <p className="text-sm font-semibold text-gray-900">{jobData.experience_level || '-'}</p>
+              </div>
+              <div className="rounded-lg border border-gray-200 p-3">
+                <p className="text-xs text-gray-500">Salary Range (LPA)</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {jobData.salary_min || jobData.salary_max ? `${jobData.salary_min || '-'} to ${jobData.salary_max || '-'}` : 'Not disclosed'}
+                </p>
+              </div>
+              <div className="rounded-lg border border-gray-200 p-3">
+                <p className="text-xs text-gray-500">Location</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {jobData.state && jobData.city ? `${jobData.city}, ${jobData.state}` : '-'}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-gray-900 mb-2">Skills</p>
+              <div className="flex flex-wrap gap-2">
+                {jobData.skills.length > 0 ? jobData.skills.map((skill, i) => (
+                  <Badge key={i} className="bg-[#3aafc4]/10 text-[#1a7a94] border-0">
+                    {skill}
+                  </Badge>
+                )) : <p className="text-sm text-gray-500">No skills added yet.</p>}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-gray-900 mb-2">Description</p>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">{jobData.description || '-'}</p>
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-gray-900 mb-2">Requirements</p>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">{jobData.requirements || '-'}</p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowPreview(false)}
+              >
+                Back to Edit
+              </Button>
+              <Button
+                type="button"
+                className="flex-1 btn-primary"
+                disabled={posting}
+                onClick={async () => {
+                  setShowPreview(false);
+                  await postJob();
+                }}
+              >
+                {posting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Post Job'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
