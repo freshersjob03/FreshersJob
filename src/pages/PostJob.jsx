@@ -109,15 +109,7 @@ export default function PostJob() {
     { value: 'full-time', label: 'Full Time' },
     { value: 'part-time', label: 'Part Time' },
     { value: 'internship', label: 'Internship' },
-    { value: 'contract', label: 'Contract' },
     { value: 'remote', label: 'Remote' }
-  ];
-
-  const experienceLevels = [
-    { value: 'fresher', label: 'Fresher (0 experience)' },
-    { value: '0-1 years', label: '0-1 Years' },
-    { value: '1-2 years', label: '1-2 Years' },
-    { value: '2-3 years', label: '2-3 Years' }
   ];
 
   const popularSkills = ['Python', 'Java', 'JavaScript', 'React', 'Node.js', 'SQL', 'AWS', 'Machine Learning', 'Data Analysis', 'Excel'];
@@ -413,22 +405,13 @@ export default function PostJob() {
 
                   <div>
                     <Label>Experience Level *</Label>
-                    <Select
+                    <Input
                       value={jobData.experience_level}
-                      onValueChange={(value) => setJobData({ ...jobData, experience_level: value })}
+                      onChange={(e) => setJobData({ ...jobData, experience_level: e.target.value })}
+                      placeholder="e.g., 0-2 years"
                       required
-                    >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select level" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {experienceLevels.map((level) => (
-                          <SelectItem key={level.value} value={level.value}>
-                            {level.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      className="mt-1"
+                    />
                   </div>
                 </div>
               </CardContent>
