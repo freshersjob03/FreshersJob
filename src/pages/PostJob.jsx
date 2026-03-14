@@ -112,6 +112,13 @@ export default function PostJob() {
     { value: 'remote', label: 'Remote' }
   ];
 
+  const experienceLevels = [
+    { value: 'fresher', label: 'Fresher (0 experience)' },
+    { value: '0-1 years', label: '0-1 Years' },
+    { value: '1-2 years', label: '1-2 Years' },
+    { value: '2-3 years', label: '2-3 Years' }
+  ];
+
   const popularSkills = ['Python', 'Java', 'JavaScript', 'React', 'Node.js', 'SQL', 'AWS', 'Machine Learning', 'Data Analysis', 'Excel'];
   const locationSuggestions = jobData.state
     ? SORTED_INDIAN_LOCATIONS.filter((location) =>
@@ -409,9 +416,15 @@ export default function PostJob() {
                       value={jobData.experience_level}
                       onChange={(e) => setJobData({ ...jobData, experience_level: e.target.value })}
                       placeholder="e.g., 0-2 years"
+                      list="experience-options"
                       required
                       className="mt-1"
                     />
+                    <datalist id="experience-options">
+                      {experienceLevels.map((level) => (
+                        <option key={level.value} value={level.label} />
+                      ))}
+                    </datalist>
                   </div>
                 </div>
               </CardContent>
