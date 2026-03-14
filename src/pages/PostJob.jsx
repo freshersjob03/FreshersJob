@@ -113,7 +113,7 @@ export default function PostJob() {
   ];
 
   const experienceLevels = [
-    { value: 'fresher', label: 'Fresher (0 experience)' },
+    { value: 'fresher', label: 'Fresher' },
     { value: '0-1 years', label: '0-1 Years' },
     { value: '1-2 years', label: '1-2 Years' },
     { value: '2-3 years', label: '2-3 Years' }
